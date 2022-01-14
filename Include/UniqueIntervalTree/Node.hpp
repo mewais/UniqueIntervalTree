@@ -5,7 +5,11 @@
 #define _UNIQUEINTERVALTREE_NODE_HPP_
 
 #include <cstdint>
+#include <concepts>
 #include <algorithm>
+#include <sstream>
+
+#include "Concepts.hpp"
 
 namespace UIT
 {
@@ -16,9 +20,10 @@ namespace UIT
     };
 
     template <class K, class V>
+    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K>
     class Node
     {
-        private:
+        public:
             K range_start;
             K range_end;
             V value;
@@ -28,9 +33,12 @@ namespace UIT
             Node* left_child;
             Node* right_child;
 
-        public:
             Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr);
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr) :
+                 range_start(range_start), range_end(range_end), value(std::move(value)), max(max), parent(parent),
+                 color(color), left_child(left_child), right_child(right_child)
+            {
+            }
 
             bool IsOverlapping(const K& range_start, const K& range_end) const
             {
@@ -121,6 +129,13 @@ namespace UIT
                 {
                     this->max = this->range_end;
                 }
+            }
+
+            std::string ToString() const
+            {
+                std::stringstream ss;
+                ss << '[' << this->range_start << ", " << this->range_end << ")" << ", Max: " << this->max;
+                return ss.str();
             }
 
             // Statics

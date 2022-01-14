@@ -14,6 +14,7 @@
 namespace UIT
 {
     template <class K, class V, class Allocator = std::allocator<Node<K, V>>>
+    requires std::equality_comparable<K> && std::totally_ordered<K>
     class Tree
     {
         public:
@@ -44,7 +45,7 @@ namespace UIT
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     return true;
                 }
@@ -78,7 +79,7 @@ namespace UIT
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     return true;
                 }
@@ -91,9 +92,9 @@ namespace UIT
 
             V& Access(const K& point, Node<K, V>* node)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound();
+                    throw PointNotFound(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -108,11 +109,11 @@ namespace UIT
 
             V& Access(const K& range_start, const K& range_end, Node<K, V>* node)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     return node->value;
                 }
@@ -125,9 +126,9 @@ namespace UIT
 
             V& Access(const K& point, Node<K, V>* node, K& found_range_start, K& found_range_end)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound();
+                    throw PointNotFound(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -145,11 +146,11 @@ namespace UIT
             V& Access(const K& range_start, const K& range_end, Node<K, V>* node, K& found_range_start,
                       K& found_range_end)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
@@ -164,9 +165,9 @@ namespace UIT
 
             const V& Access(const K& point, Node<K, V>* node) const
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound();
+                    throw PointNotFound(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -181,11 +182,11 @@ namespace UIT
 
             const V& Access(const K& range_start, const K& range_end, Node<K, V>* node) const
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     return node->value;
                 }
@@ -198,9 +199,9 @@ namespace UIT
 
             const V& Access(const K& point, Node<K, V>* node, K& found_range_start, K& found_range_end) const
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound();
+                    throw PointNotFound(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -218,11 +219,11 @@ namespace UIT
             const V& Access(const K& range_start, const K& range_end, Node<K, V>* node, K& found_range_start,
                             K& found_range_end) const
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
@@ -237,7 +238,7 @@ namespace UIT
 
             bool Access(const K& point, Node<K, V>* node, V*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
@@ -255,11 +256,11 @@ namespace UIT
 
             bool Access(const K& range_start, const K& range_end, Node<K, V>* node, V*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     ret = &node->value;
                     return true;
@@ -273,7 +274,7 @@ namespace UIT
 
             bool Access(const K& point, Node<K, V>* node, K& found_range_start, K& found_range_end, V*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
@@ -294,11 +295,11 @@ namespace UIT
             bool Access(const K& range_start, const K& range_end, Node<K, V>* node, K& found_range_start,
                         K& found_range_end, V*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
@@ -314,7 +315,7 @@ namespace UIT
 
             bool Access(const K& point, Node<K, V>* node, V const*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
@@ -332,11 +333,11 @@ namespace UIT
 
             bool Access(const K& range_start, const K& range_end, Node<K, V>* node, V const*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     ret = &node->value;
                     return true;
@@ -350,7 +351,7 @@ namespace UIT
 
             bool Access(const K& point, Node<K, V>* node, K& found_range_start, K& found_range_end, V const*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
@@ -371,11 +372,11 @@ namespace UIT
             bool Access(const K& range_start, const K& range_end, Node<K, V>* node, K& found_range_start,
                         K& found_range_end, V const*& ret)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
                     return false;
                 }
-                if (node->Overlapping(range_start, range_end))
+                if (node->IsOverlapping(range_start, range_end))
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
@@ -400,7 +401,7 @@ namespace UIT
                 // Insert somewhere
                 if (node == nullptr)
                 {
-                    if (unlikely(this->root == nullptr))
+                    if (uit_unlikely(this->root == nullptr))
                     {
                         node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
                         std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
@@ -415,9 +416,9 @@ namespace UIT
                     return node;
                 }
 
-                if (unlikely(node->Overlapping(range_start, range_end)))
+                if (uit_unlikely(node->IsOverlapping(range_start, range_end)))
                 {
-                    throw RangeExists();
+                    throw RangeExists(range_start, range_end);
                 }
                 if (range_start < node->range_start)
                 {
@@ -473,9 +474,9 @@ namespace UIT
 
                 if (conflict)
                 {
-                    if(node->parent->right_child == node)
+                    if(node->IsRightChild())
                     {
-                        if(node->parent->left_child == nullptr || node->parent->left_child->color == Color::BLACK)
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
                         {
                             if(node->left_child != nullptr && node->left_child->color == Color::RED)
                             {
@@ -488,7 +489,7 @@ namespace UIT
                         }
                         else
                         {
-                            node->parent->left_child->color = Color::BLACK;
+                            node->GetSibling()->color = Color::BLACK;
                             node->color = Color::BLACK;
                             if(node->parent != this->root)
                             {
@@ -498,7 +499,7 @@ namespace UIT
                     }
                     else
                     {
-                        if(node->parent->right_child == nullptr || node->parent->right_child->color == Color::BLACK)
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
                         {
                             if(node->left_child != nullptr && node->left_child->color == Color::RED)
                             {
@@ -511,7 +512,7 @@ namespace UIT
                         }
                         else
                         {
-                            node->parent->right_child->color = Color::BLACK;
+                            node->GetSibling()->color = Color::BLACK;
                             node->color = Color::BLACK;
                             if(node->parent != this->root)
                             {
@@ -529,9 +530,9 @@ namespace UIT
 
             void GrowEnd(const K& range_start, const K& range_end, const K& new_range_end, Node<K, V>* node)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
                 if (node->Same(range_start, range_end))
                 {
@@ -770,9 +771,9 @@ namespace UIT
 
             void Remove(const K& range_start, const K& range_end, Node<K, V>* node)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
                 if (node->Same(range_start, range_end))
                 {
@@ -790,9 +791,9 @@ namespace UIT
 
             void ShrinkEnd(const K& range_start, const K& range_end, const K& new_range_end, Node<K, V>* node)
             {
-                if (unlikely(node == nullptr))
+                if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound();
+                    throw RangeNotFound(range_start, range_end);
                 }
                 if (node->Same(range_start, range_end))
                 {
@@ -819,12 +820,13 @@ namespace UIT
                     tree = prefix;
                     tree += left? "├──" : "└──";
                     tree += node->color == Color::BLACK? "B: " : "R: ";
-                    tree += '[' + STRING::ToHexString(node->range_start) + ", " + STRING::ToHexString(node->range_end) + ")";
-                    tree += ", Max: " + std::to_string(node->max) + "\n";
+                    tree += node->ToString();
+                    tree += "\n";
 
                     std::string new_prefix = prefix;
                     new_prefix += left? "│   " : "    ";
                     tree += this->ToString(new_prefix, node->left_child, true);
+                    tree += this->ToString(new_prefix, node->right_child, false);
                 }
                 return tree;
             }
@@ -910,9 +912,9 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Tree<K, V, Allocator>::OrderCheck(range_end, new_range_end);
-                if (unlikely(this->Overlapping(range_end, new_range_end, this->root)))
+                if (uit_unlikely(this->Overlapping(range_end, new_range_end, this->root)))
                 {
-                    throw RangeExists();
+                    throw RangeExists(range_start, range_end);
                 }
                 this->GrowEnd(range_start, range_end, new_range_end, this->root);
             }
@@ -921,9 +923,9 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Tree<K, V, Allocator>::OrderCheck(range_end, new_range_start);
-                if (unlikely(this->Overlapping(range_end, new_range_start, this->root)))
+                if (uit_unlikely(this->Overlapping(range_end, new_range_start, this->root)))
                 {
-                    throw RangeExists();
+                    throw RangeExists(range_start, range_end);
                 }
                 this->GrowStart(range_start, range_end, new_range_start, this->root);
             }

@@ -6,19 +6,21 @@ set(CMAKE_CXX_STANDARD 20)
 ##################################################################################
 ################################### Library ######################################
 ##################################################################################
-add_library(UniqueIntervalTree INTERFACE Include/UniqueIntervalTree/Exceptions.hpp Tests/Test1.cpp)
+file(GLOB header_files Include/UniqueIntervalTree/*.hpp)
+
+add_library(UniqueIntervalTree INTERFACE)
 target_include_directories(UniqueIntervalTree INTERFACE Include/UniqueIntervalTree/)
 
-##################################################################################
-#################################### Tests #######################################
-##################################################################################
+###################################################################################
+##################################### Test #######################################
+###################################################################################
 include(CTest)
 enable_testing()
-file(GLOB tests Tests/*.cpp)
+file(GLOB tests Test/*.cpp)
 include_directories(Include/)
 
 foreach(test ${tests})
     string(REGEX REPLACE "(^.*/|\\.[^.]*$)" "" basetest ${test})
-    add_executable(${basetest} ${test} Include/UniqueIntervalTree/Concepts.hpp Include/UniqueIntervalTree/Utils.hpp)
+    add_executable(${basetest} ${test})
     add_test(${basetest} ${basetest})
 endforeach()
