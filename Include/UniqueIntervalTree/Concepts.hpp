@@ -1,7 +1,18 @@
 // Copyright(c) 2021-present, Mohammad Ewais & contributors.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
-#ifndef __CONCEPTS_HPP__
-#define __CONCEPTS_HPP__
+#ifndef _UNIQUEINTERVALTREE_CONCEPTS_HPP_
+#define _UNIQUEINTERVALTREE_CONCEPTS_HPP_
 
-#endif //__CONCEPTS_HPP__
+#include <sstream>
+
+namespace UIT
+{
+    template <class T>
+    concept Printable = requires(std::stringstream& os, T a)
+    {
+        os << a;
+    };
+}
+
+#endif // _UNIQUEINTERVALTREE_CONCEPTS_HPP_
