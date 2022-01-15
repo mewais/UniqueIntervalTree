@@ -528,6 +528,142 @@ namespace UIT
                 return node;
             }
 
+            Node<K, V>* Insert(Node<K, V>* insert_node, Node<K, V>*& node, Node<K, V>* parent = nullptr)
+            {
+                bool conflict = false;
+                static bool left_left = false;
+                static bool left_right = false;
+                static bool right_right = false;
+                static bool right_left = false;
+
+                // Insert somewhere
+                if (node == nullptr)
+                {
+                    insert_node->parent = parent;
+                    if (uit_unlikely(this->root == nullptr))
+                    {
+                        insert_node->color = Color::BLACK;
+                    }
+                    else
+                    {
+                        insert_node->color = Color::RED;
+                    }
+                    node = insert_node;
+                    return node;
+                }
+
+                if (uit_unlikely(node->IsOverlapping(insert_node->range_start, insert_node->range_end)))
+                {
+                    throw RangeExists(insert_node->range_start, insert_node->range_end);
+                }
+                if (insert_node->range_start < node->range_start)
+                {
+                    node->left_child = this->Insert(insert_node, node->left_child, node);
+                    node->left_child->parent = node;
+                    if (node != this->root && node->color == Color::RED && node->left_child->color == Color::RED)
+                    {
+                        conflict = true;
+                    }
+                }
+                else
+                {
+                    node->right_child = this->Insert(insert_node, node->right_child, node);
+                    node->right_child->parent = node;
+                    if (node != this->root && node->color == Color::RED && node->right_child->color == Color::RED)
+                    {
+                        conflict = true;
+                    }
+                }
+
+                if (left_left)
+                {
+                    node = node->RotateLeft();
+                    node->color = Color::BLACK;
+                    node->left_child->color = Color::RED;
+                    left_left = false;
+                }
+                else if (right_right)
+                {
+                    node = node->RotateRight();
+                    node->color = Color::BLACK;
+                    node->right_child->color = Color::RED;
+                    right_right = false;
+                }
+                else if (right_left)
+                {
+                    node->right_child = node->right_child->RotateRight();
+                    node->right_child->parent = node;
+                    node = node->RotateLeft();
+                    node->color = Color::BLACK;
+                    node->left_child->color = Color::RED;
+                    right_left = false;
+                }
+                else if (left_right)
+                {
+                    node->left_child = node->left_child->RotateLeft();
+                    node->left_child->parent = node;
+                    node = node->RotateRight();
+                    node->color = Color::BLACK;
+                    node->right_child->color = Color::RED;
+                    left_right = false;
+                }
+
+                if (conflict)
+                {
+                    if(node->IsRightChild())
+                    {
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
+                        {
+                            if(node->left_child != nullptr && node->left_child->color == Color::RED)
+                            {
+                                right_left = true;
+                            }
+                            else if(node->right_child != nullptr && node->right_child->color == Color::RED)
+                            {
+                                left_left = true;
+                            }
+                        }
+                        else
+                        {
+                            node->GetSibling()->color = Color::BLACK;
+                            node->color = Color::BLACK;
+                            if(node->parent != this->root)
+                            {
+                                node->parent->color = Color::RED;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
+                        {
+                            if(node->left_child != nullptr && node->left_child->color == Color::RED)
+                            {
+                                right_right = true;
+                            }
+                            else if(node->right_child != nullptr && node->right_child->color == Color::RED)
+                            {
+                                left_right = true;
+                            }
+                        }
+                        else
+                        {
+                            node->GetSibling()->color = Color::BLACK;
+                            node->color = Color::BLACK;
+                            if(node->parent != this->root)
+                            {
+                                node->parent->color = Color::RED;
+                            }
+                        }
+                    }
+                }
+
+                // Update max
+                node->UpdateMax();
+
+                return node;
+            }
+
             void GrowEnd(const K& range_start, const K& range_end, const K& new_range_end, Node<K, V>* node)
             {
                 if (uit_unlikely(node == nullptr))
@@ -547,142 +683,6 @@ namespace UIT
                     this->GrowEnd(range_start, range_end, new_range_end, node->right_child);
                 }
                 node->UpdateMax();
-            }
-
-            void GrowStart(const K& range_start, const K& range_end, const K& new_range_start, Node<K, V>* node);
-
-            void Remove(Node<K, V>* node)
-            {
-                Node<K, V>* parent = node->parent;
-                Node<K, V>* sibling = node->Sibling();
-                Node<K, V>* replacement;
-                if (node->left_child == nullptr && node->right_child == nullptr)
-                {
-                    replacement = nullptr;
-                }
-                else if (node->right_child == nullptr)
-                {
-                    replacement = node->left_child;
-                }
-                else if (node->left_child == nullptr)
-                {
-                    replacement = node->right_child;
-                }
-                else
-                {
-                    // 1. Deleting a node with two children
-                    // 1.1. Get the min leaf node
-                    replacement = node;
-                    while (replacement->left_child)
-                    {
-                        replacement = replacement->left_child;
-                    }
-                }
-
-                bool double_black = ((replacement == nullptr || replacement->color == Color::BLACK) &&
-                                     (node->color == Color::BLACK));
-
-                if (node->left_child == nullptr && node->right_child == nullptr)
-                {
-                    // Leaf node, no children
-                    if (node == this->root)
-                    {
-                        this->root = nullptr;
-                    }
-                    else
-                    {
-                        if (double_black)
-                        {
-                            this->RemoveRecolor(node);
-                        }
-                        else
-                        {
-                            if (sibling != nullptr)
-                            {
-                                sibling->color = Color::RED;
-                            }
-                        }
-
-                        // Remove node from parent
-                        if (node->IsLeftChild())
-                        {
-                            parent->left_child = nullptr;
-                        }
-                        else
-                        {
-                            parent->right_child = nullptr;
-                        }
-                        UpdateAllMax(parent);
-                    }
-                    // Delete node
-                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
-                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
-                }
-                else if (node->right_child == nullptr || node->left_child == nullptr)
-                {
-                    // 1 child only
-                    // Connect replacement and parent
-                    if (node != this->root)
-                    {
-                        if (node->IsLeftChild())
-                        {
-                            parent->left_child = replacement;
-                        }
-                        else
-                        {
-                            parent->right_child = replacement;
-                        }
-                        UpdateAllMax(parent);
-                    }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    replacement->parent = parent;
-                    // Delete node
-                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
-                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
-                    // Recolor
-                    if (double_black)
-                    {
-                        this->RemoveRecolor(replacement);
-                    }
-                    else
-                    {
-                        replacement->color = Color::BLACK;
-                    }
-                }
-                else
-                {
-                    // 2 Children
-                    if (node != this->root)
-                    {
-                        if (node->IsLeftChild())
-                        {
-                            parent->left_child = replacement;
-                        }
-                        else
-                        {
-                            parent->right_child = replacement;
-                        }
-                    }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    Node<K, V>* tmp_left_child = replacement->left_child;
-                    Node<K, V>* tmp_right_child = replacement->right_child;
-                    Node<K, V>* tmp_parent = replacement->parent;
-                    replacement->left_child = node->left_child;
-                    replacement->right_child = node->right_child;
-                    replacement->parent = parent;
-                    UpdateAllMax(replacement);
-                    node->left_child = tmp_left_child;
-                    node->right_child = tmp_right_child;
-                    node->left_child = tmp_parent;
-                    // Delete node
-                    this->Remove(node);
-                }
             }
 
             void RemoveRecolor(Node<K, V>* node)
@@ -769,7 +769,297 @@ namespace UIT
                 }
             }
 
-            void Remove(const K& range_start, const K& range_end, Node<K, V>* node)
+            void Delete(Node<K, V>* node)
+            {
+                Node<K, V>* parent = node->parent;
+                Node<K, V>* sibling = node->Sibling();
+                Node<K, V>* replacement;
+                if (node->left_child == nullptr && node->right_child == nullptr)
+                {
+                    replacement = nullptr;
+                }
+                else if (node->right_child == nullptr)
+                {
+                    replacement = node->left_child;
+                }
+                else if (node->left_child == nullptr)
+                {
+                    replacement = node->right_child;
+                }
+                else
+                {
+                    // 1. Deleting a node with two children
+                    // 1.1. Get the min leaf node
+                    replacement = node;
+                    while (replacement->left_child)
+                    {
+                        replacement = replacement->left_child;
+                    }
+                }
+
+                bool double_black = ((replacement == nullptr || replacement->color == Color::BLACK) &&
+                                     (node->color == Color::BLACK));
+
+                if (node->left_child == nullptr && node->right_child == nullptr)
+                {
+                    // Leaf node, no children
+                    if (node == this->root)
+                    {
+                        this->root = nullptr;
+                    }
+                    else
+                    {
+                        if (double_black)
+                        {
+                            this->RemoveRecolor(node);
+                        }
+                        else
+                        {
+                            if (sibling != nullptr)
+                            {
+                                sibling->color = Color::RED;
+                            }
+                        }
+
+                        // Delete node from parent
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = nullptr;
+                        }
+                        else
+                        {
+                            parent->right_child = nullptr;
+                        }
+                        UpdateAllMax(parent);
+                    }
+                    // Delete node
+                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
+                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
+                }
+                else if (node->right_child == nullptr || node->left_child == nullptr)
+                {
+                    // 1 child only
+                    // Connect replacement and parent
+                    if (node != this->root)
+                    {
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = replacement;
+                        }
+                        else
+                        {
+                            parent->right_child = replacement;
+                        }
+                        UpdateAllMax(parent);
+                    }
+                    else
+                    {
+                        this->root = replacement;
+                    }
+                    replacement->parent = parent;
+                    // Delete node
+                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
+                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
+                    // Recolor
+                    if (double_black)
+                    {
+                        this->RemoveRecolor(replacement);
+                    }
+                    else
+                    {
+                        replacement->color = Color::BLACK;
+                    }
+                }
+                else
+                {
+                    // 2 Children
+                    if (node != this->root)
+                    {
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = replacement;
+                        }
+                        else
+                        {
+                            parent->right_child = replacement;
+                        }
+                    }
+                    else
+                    {
+                        this->root = replacement;
+                    }
+                    Node<K, V>* tmp_left_child = replacement->left_child;
+                    Node<K, V>* tmp_right_child = replacement->right_child;
+                    Node<K, V>* tmp_parent = replacement->parent;
+                    replacement->left_child = node->left_child;
+                    replacement->right_child = node->right_child;
+                    replacement->parent = parent;
+                    UpdateAllMax(replacement);
+                    node->left_child = tmp_left_child;
+                    node->right_child = tmp_right_child;
+                    node->left_child = tmp_parent;
+                    // Delete node
+                    this->Delete(node);
+                }
+            }
+
+            void Delete(const K& range_start, const K& range_end, Node<K, V>* node)
+            {
+                if (uit_unlikely(node == nullptr))
+                {
+                    throw RangeNotFound(range_start, range_end);
+                }
+                if (node->Same(range_start, range_end))
+                {
+                    this->Delete(node);
+                }
+                else if (node->left_child && node->left_child->max > range_start)
+                {
+                    this->Delete(range_start, range_end, node->left_child);
+                }
+                else
+                {
+                    this->Delete(range_start, range_end, node->right_child);
+                }
+            }
+
+            void Remove(Node<K, V>* node)
+            {
+                Node<K, V>* parent = node->parent;
+                Node<K, V>* sibling = node->Sibling();
+                Node<K, V>* replacement;
+                if (node->left_child == nullptr && node->right_child == nullptr)
+                {
+                    replacement = nullptr;
+                }
+                else if (node->right_child == nullptr)
+                {
+                    replacement = node->left_child;
+                }
+                else if (node->left_child == nullptr)
+                {
+                    replacement = node->right_child;
+                }
+                else
+                {
+                    // 1. Deleting a node with two children
+                    // 1.1. Get the min leaf node
+                    replacement = node;
+                    while (replacement->left_child)
+                    {
+                        replacement = replacement->left_child;
+                    }
+                }
+
+                bool double_black = ((replacement == nullptr || replacement->color == Color::BLACK) &&
+                                     (node->color == Color::BLACK));
+
+                if (node->left_child == nullptr && node->right_child == nullptr)
+                {
+                    // Leaf node, no children
+                    if (node == this->root)
+                    {
+                        this->root = nullptr;
+                    }
+                    else
+                    {
+                        if (double_black)
+                        {
+                            this->RemoveRecolor(node);
+                        }
+                        else
+                        {
+                            if (sibling != nullptr)
+                            {
+                                sibling->color = Color::RED;
+                            }
+                        }
+
+                        // Remove node from parent
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = nullptr;
+                        }
+                        else
+                        {
+                            parent->right_child = nullptr;
+                        }
+                        UpdateAllMax(parent);
+                    }
+                    // Remove node
+                    node->parent = nullptr;
+                    node->right_child = nullptr;
+                    node->left_child = nullptr;
+                }
+                else if (node->right_child == nullptr || node->left_child == nullptr)
+                {
+                    // 1 child only
+                    // Connect replacement and parent
+                    if (node != this->root)
+                    {
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = replacement;
+                        }
+                        else
+                        {
+                            parent->right_child = replacement;
+                        }
+                        UpdateAllMax(parent);
+                    }
+                    else
+                    {
+                        this->root = replacement;
+                    }
+                    replacement->parent = parent;
+                    // Remove node
+                    node->parent = nullptr;
+                    node->right_child = nullptr;
+                    node->left_child = nullptr;
+                    // Recolor
+                    if (double_black)
+                    {
+                        this->RemoveRecolor(replacement);
+                    }
+                    else
+                    {
+                        replacement->color = Color::BLACK;
+                    }
+                }
+                else
+                {
+                    // 2 Children
+                    if (node != this->root)
+                    {
+                        if (node->IsLeftChild())
+                        {
+                            parent->left_child = replacement;
+                        }
+                        else
+                        {
+                            parent->right_child = replacement;
+                        }
+                    }
+                    else
+                    {
+                        this->root = replacement;
+                    }
+                    Node<K, V>* tmp_left_child = replacement->left_child;
+                    Node<K, V>* tmp_right_child = replacement->right_child;
+                    Node<K, V>* tmp_parent = replacement->parent;
+                    replacement->left_child = node->left_child;
+                    replacement->right_child = node->right_child;
+                    replacement->parent = parent;
+                    UpdateAllMax(replacement);
+                    node->left_child = tmp_left_child;
+                    node->right_child = tmp_right_child;
+                    node->left_child = tmp_parent;
+                    // Remove node
+                    this->Remove(node);
+                }
+            }
+
+            Node<K, V>* Remove(const K& range_start, const K& range_end, Node<K, V>* node)
             {
                 if (uit_unlikely(node == nullptr))
                 {
@@ -778,14 +1068,15 @@ namespace UIT
                 if (node->Same(range_start, range_end))
                 {
                     this->Remove(node);
+                    return node;
                 }
                 else if (node->left_child && node->left_child->max > range_start)
                 {
-                    this->Remove(range_start, range_end, node->left_child);
+                    return this->Remove(range_start, range_end, node->left_child);
                 }
                 else
                 {
-                    this->Remove(range_start, range_end, node->right_child);
+                    return this->Remove(range_start, range_end, node->right_child);
                 }
             }
 
@@ -809,8 +1100,6 @@ namespace UIT
                 }
                 node->UpdateMax();
             }
-
-            void ShrinkStart(const K& range_start, const K& range_end, const K& new_range_start, Node<K, V>* node);
 
             std::string ToString(const std::string& prefix, Node<K, V>* node, bool left) const
             {
@@ -922,18 +1211,16 @@ namespace UIT
             void GrowStart(const K& range_start, const K& range_end, const K& new_range_start)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                Tree<K, V, Allocator>::OrderCheck(range_end, new_range_start);
-                if (uit_unlikely(this->Overlapping(range_end, new_range_start, this->root)))
-                {
-                    throw RangeExists(range_start, range_end);
-                }
-                this->GrowStart(range_start, range_end, new_range_start, this->root);
+                Tree<K, V, Allocator>::OrderCheck(new_range_start, range_end);
+                Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
+                to_modify_node->range_start = new_range_start;
+                this->Insert(to_modify_node, this->root);
             }
 
-            void Remove(const K& range_start, const K& range_end)
+            void Delete(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                this->Remove(range_start, range_end, this->root);
+                this->Delete(range_start, range_end, this->root);
             }
 
             void ShrinkEnd(const K& range_start, const K& range_end, const K& new_range_end)
@@ -947,7 +1234,9 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Tree<K, V, Allocator>::OrderCheck(new_range_start, range_end);
-                this->ShrinkStart(range_start, range_end, new_range_start, this->root);
+                Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
+                to_modify_node->range_start = new_range_start;
+                this->Insert(to_modify_node, this->root);
             }
 
             std::string ToString() const
