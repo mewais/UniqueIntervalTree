@@ -35,7 +35,10 @@ namespace UIT
             static void UpdateAllMax(Node<K, V>* leaf)
             {
                 leaf->UpdateMax();
-                UpdateAllMax(leaf->GetParent());
+                if (leaf->parent)
+                {
+                    UpdateAllMax(leaf->parent);
+                }
             }
 
             // Recursive functions
@@ -670,7 +673,7 @@ namespace UIT
                 {
                     throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Same(range_start, range_end))
+                if (node->IsSame(range_start, range_end))
                 {
                     node->range_end = new_range_end;
                 }
@@ -692,7 +695,7 @@ namespace UIT
                     return;
                 }
 
-                Node<K, V>* sibling = node->Sibling();
+                Node<K, V>* sibling = node->GetSibling();
                 Node<K, V>* parent = node->parent;
 
                 if (sibling == nullptr)
@@ -772,7 +775,7 @@ namespace UIT
             void Delete(Node<K, V>* node)
             {
                 Node<K, V>* parent = node->parent;
-                Node<K, V>* sibling = node->Sibling();
+                Node<K, V>* sibling = node->GetSibling();
                 Node<K, V>* replacement;
                 if (node->left_child == nullptr && node->right_child == nullptr)
                 {
@@ -909,7 +912,7 @@ namespace UIT
                 {
                     throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Same(range_start, range_end))
+                if (node->IsSame(range_start, range_end))
                 {
                     this->Delete(node);
                 }
@@ -926,7 +929,7 @@ namespace UIT
             void Remove(Node<K, V>* node)
             {
                 Node<K, V>* parent = node->parent;
-                Node<K, V>* sibling = node->Sibling();
+                Node<K, V>* sibling = node->GetSibling();
                 Node<K, V>* replacement;
                 if (node->left_child == nullptr && node->right_child == nullptr)
                 {
@@ -1065,7 +1068,7 @@ namespace UIT
                 {
                     throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Same(range_start, range_end))
+                if (node->IsSame(range_start, range_end))
                 {
                     this->Remove(node);
                     return node;
@@ -1086,7 +1089,7 @@ namespace UIT
                 {
                     throw RangeNotFound(range_start, range_end);
                 }
-                if (node->Same(range_start, range_end))
+                if (node->IsSame(range_start, range_end))
                 {
                     node->range_end = new_range_end;
                 }
