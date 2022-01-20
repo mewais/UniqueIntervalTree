@@ -1224,6 +1224,12 @@ namespace UIT
                 this->Insert(range_start, range_end, value, this->root);
             }
 
+            void Insert(Node<K, V>* insert_node)
+            {
+                Tree<K, V, Allocator>::OrderCheck(insert_node->range_start, insert_node->range_end);
+                this->Insert(insert_node, this->root);
+            }
+
             void GrowEnd(const K& range_start, const K& range_end, const K& new_range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
