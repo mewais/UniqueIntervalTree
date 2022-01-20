@@ -1247,6 +1247,12 @@ namespace UIT
                 this->Delete(range_start, range_end, this->root);
             }
 
+            Node<K, V>* Remove(const K& range_start, const K& range_end)
+            {
+                Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
+                return this->Remove(range_start, range_end, this->root);
+            }
+
             void ShrinkEnd(const K& range_start, const K& range_end, const K& new_range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
