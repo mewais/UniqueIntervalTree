@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    std::cout << "Test started\n";
+    std::cout << "test started\n";
     UIT::Tree<uint64_t, uint64_t> map;
     uint64_t value = 1;
     map.Insert(0x00007FFFF3F3C040, 0x00007FFFF3F3C278, value);
