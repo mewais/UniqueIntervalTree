@@ -1165,21 +1165,45 @@ namespace UIT
                 return this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
             }
 
-            bool Access(const K& point, V*& ret);
+            bool Access(const K& point, V*& ret)
+            {
+                return this->Access(point, this->root, ret);
+            }
 
-            bool Access(const K& range_start, const K& range_end, V*& ret);
+            bool Access(const K& range_start, const K& range_end, V*& ret)
+            {
+                return this->Access(range_start, range_end, this->root, ret);
+            }
 
-            bool Access(const K& point, K& found_range_start, K& found_range_end, V*& ret);
+            bool Access(const K& point, K& found_range_start, K& found_range_end, V*& ret)
+            {
+                return this->Access(point, this->root, found_range_start, found_range_end, ret);
+            }
 
-            bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V*& ret);
+            bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V*& ret)
+            {
+                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+            }
 
-            bool Access(const K& point, V const*& ret);
+            bool Access(const K& point, V const*& ret)
+            {
+                return this->Access(point, this->root, ret);
+            }
 
-            bool Access(const K& range_start, const K& range_end, V const*& ret);
+            bool Access(const K& range_start, const K& range_end, V const*& ret)
+            {
+                return this->Access(range_start, range_end, this->root, ret);
+            }
 
-            bool Access(const K& point, K& found_range_start, K& found_range_end, V const*& ret);
+            bool Access(const K& point, K& found_range_start, K& found_range_end, V const*& ret)
+            {
+                return this->Access(point, this->root, found_range_start, found_range_end, ret);
+            }
 
-            bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V const*& ret);
+            bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V const*& ret)
+            {
+                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+            }
 
             bool Has(const K& point) const
             {
