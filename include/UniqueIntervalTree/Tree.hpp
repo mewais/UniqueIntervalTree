@@ -1125,7 +1125,7 @@ namespace UIT
             {
                 Node<K, V>* node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
                 std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
-                                                            value, max, parent, Color::BLACK);
+                                                            value, max, parent, color, left_child, right_child);
                 return node;
             }
 
