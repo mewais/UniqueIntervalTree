@@ -406,15 +406,11 @@ namespace UIT
                 {
                     if (uit_unlikely(this->root == nullptr))
                     {
-                        node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
-                        std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
-                                                                    value, range_end, parent, Color::BLACK);
+                        node = this->AllocateNode(range_start, range_end, value, range_end, parent, Color::BLACK);
                     }
                     else
                     {
-                        node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
-                        std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
-                                                                    value, range_end, parent);
+                        node = this->AllocateNode(range_start, range_end, value, range_end, parent);
                     }
                     return node;
                 }
@@ -836,8 +832,7 @@ namespace UIT
                         UpdateAllMax(parent);
                     }
                     // Delete node
-                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
-                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
+                    this->DeallocateNode(node);
                 }
                 else if (node->right_child == nullptr || node->left_child == nullptr)
                 {
@@ -861,8 +856,7 @@ namespace UIT
                     }
                     replacement->parent = parent;
                     // Delete node
-                    std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
-                    std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
+                    this->DeallocateNode(node);
                     // Recolor
                     if (double_black)
                     {
@@ -1124,6 +1118,23 @@ namespace UIT
             }
 
         public:
+            // Allocation function
+            Node<K, V>* AllocateNode(const K& range_start, const K& range_end, V& value, const K& max,
+                                     Node<K, V>* parent = nullptr, Color color = Color::RED,
+                                     Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+            {
+                Node<K, V>* node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
+                std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
+                                                            value, max, parent, Color::BLACK);
+                return node;
+            }
+
+            void DeallocateNode(Node<K, V>* node)
+            {
+                std::allocator_traits<Allocator>::destroy(this->node_allocator, node);
+                std::allocator_traits<Allocator>::deallocate(this->node_allocator, node, 1);
+            }
+
             V& Access(const K& point)
             {
                 return this->Access(point, this->root);
