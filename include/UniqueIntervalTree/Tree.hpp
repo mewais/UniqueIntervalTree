@@ -673,7 +673,7 @@ namespace UIT
                 {
                     node->range_end = new_range_end;
                 }
-                else if (node->left_child && node->max > range_start)
+                else if (node->left_child && node->left_child->max > range_start)
                 {
                     this->GrowEnd(range_start, range_end, new_range_end, node->left_child);
                 }
@@ -1087,7 +1087,7 @@ namespace UIT
                 {
                     node->range_end = new_range_end;
                 }
-                else if (node->left_child && node->max > range_start)
+                else if (node->left_child && node->left_child->max > range_start)
                 {
                     this->ShrinkEnd(range_start, range_end, new_range_end, node->left_child);
                 }
