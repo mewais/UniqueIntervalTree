@@ -82,6 +82,7 @@ namespace UIT
                 Node<K, V>* x = this->right_child;
                 Node<K, V>* y = x->left_child;
                 x->left_child = this;
+                x->parent = this->parent;
                 this->right_child = y;
                 this->parent = x;
                 if (y)
@@ -99,6 +100,7 @@ namespace UIT
                 Node<K, V>* x = this->left_child;
                 Node<K, V>* y = x->right_child;
                 x->right_child = this;
+                x->parent = this->parent;
                 this->left_child = y;
                 this->parent = x;
                 if (y)
@@ -131,10 +133,18 @@ namespace UIT
                 }
             }
 
-            std::string ToString() const
+            std::string ToString(bool addresses) const
             {
                 std::stringstream ss;
-                ss << '[' << this->range_start << ", " << this->range_end << ")" << ", Max: " << this->max;
+                ss << (this->color == Color::BLACK? "B: " : "R: ");
+                ss << '[' << this->range_start << ", " << this->range_end << ")";
+                ss << ", Max: " << this->max;
+                if (addresses)
+                {
+                    ss << ", Parent: " << this->parent;
+                    ss << ", LeftChild: " << this->left_child;
+                    ss << ", RightChild: " << this->right_child;
+                }
                 return ss.str();
             }
 

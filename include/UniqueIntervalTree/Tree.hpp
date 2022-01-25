@@ -1098,21 +1098,20 @@ namespace UIT
                 node->UpdateMax();
             }
 
-            std::string ToString(const std::string& prefix, Node<K, V>* node, bool left) const
+            std::string ToString(const std::string& prefix, Node<K, V>* node, bool left, bool addresses) const
             {
                 std::string tree = "";
                 if (node)
                 {
                     tree = prefix;
                     tree += left? "├──" : "└──";
-                    tree += node->color == Color::BLACK? "B: " : "R: ";
-                    tree += node->ToString();
+                    tree += node->ToString(addresses);
                     tree += "\n";
 
                     std::string new_prefix = prefix;
                     new_prefix += left? "│   " : "    ";
-                    tree += this->ToString(new_prefix, node->left_child, true);
-                    tree += this->ToString(new_prefix, node->right_child, false);
+                    tree += this->ToString(new_prefix, node->left_child, true, addresses);
+                    tree += this->ToString(new_prefix, node->right_child, false, addresses);
                 }
                 return tree;
             }
@@ -1289,9 +1288,9 @@ namespace UIT
                 this->Insert(to_modify_node, this->root);
             }
 
-            std::string ToString() const
+            std::string ToString(bool addresses = false) const
             {
-                return this->ToString("", this->root, false);
+                return this->ToString("", this->root, false, addresses);
             }
     };
 }
