@@ -29,7 +29,7 @@ namespace UIT
                 this->range_end = range_end;
             }
 
-            const char* what() throw ()
+            const char* what() noexcept
             {
                 if (this->range_end < this->range_start)
                 {
@@ -55,12 +55,12 @@ namespace UIT
             std::stringstream ss;
 
         public:
-            PointNotFound(const K& point)
+            explicit PointNotFound(const K& point)
             {
                 this->point = point;
             }
 
-            const char* what() throw ()
+            const char* what() noexcept
             {
                 this->ss << "Point " << this->point << " was not found in the tree";
                 return this->ss.str().c_str();
@@ -83,7 +83,7 @@ namespace UIT
                 this->range_end = range_end;
             }
 
-            const char* what() throw ()
+            const char* what() noexcept
             {
                 this->ss << "Range [" << this->range_start << ", " << this->range_end << ") was not found in the tree";
                 return this->ss.str().c_str();
@@ -106,11 +106,29 @@ namespace UIT
                 this->range_end = range_end;
             }
 
-            const char* what() throw ()
+            const char* what() noexcept
             {
                 this->ss << "Range [" << this->range_start << ", " << this->range_end <<
                             ") overlaps with an existing range in the tree";
                 return this->ss.str().c_str();
+            }
+    };
+
+    class InternalError : public std::exception
+    {
+        private:
+            std::string error;
+
+        public:
+            explicit InternalError(const std::string& error)
+            {
+                this->error = error;
+                this->error += "\n\tPlease submit an issue on: https://github.com/mewais/UniqueIntervalTree/issues";
+            }
+
+            const char* what() noexcept
+            {
+                return this->error.c_str();
             }
     };
 }
