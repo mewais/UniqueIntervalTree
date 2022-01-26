@@ -77,42 +77,6 @@ namespace UIT
                 return this->parent->left_child;
             }
 
-            Node<K, V>* RotateLeft()
-            {
-                Node<K, V>* x = this->right_child;
-                Node<K, V>* y = x->left_child;
-                x->left_child = this;
-                x->parent = this->parent;
-                this->right_child = y;
-                this->parent = x;
-                if (y)
-                {
-                    y->parent = this;
-                    y->UpdateMax();
-                }
-                this->UpdateMax();
-                x->UpdateMax();
-                return x;
-            }
-
-            Node<K, V>* RotateRight()
-            {
-                Node<K, V>* x = this->left_child;
-                Node<K, V>* y = x->right_child;
-                x->right_child = this;
-                x->parent = this->parent;
-                this->left_child = y;
-                this->parent = x;
-                if (y)
-                {
-                    y->parent = this;
-                    y->UpdateMax();
-                }
-                this->UpdateMax();
-                x->UpdateMax();
-                return x;
-            }
-
             void UpdateMax()
             {
                 if (this->left_child && this->right_child)

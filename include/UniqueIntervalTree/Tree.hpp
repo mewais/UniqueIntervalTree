@@ -41,6 +41,50 @@ namespace UIT
                 }
             }
 
+            Node<K, V>* RotateLeft(Node<K, V>* node)
+            {
+                Node<K, V>* x = node->right_child;
+                Node<K, V>* y = x->left_child;
+                x->left_child = node;
+                x->parent = node->parent;
+                node->right_child = y;
+                node->parent = x;
+                if (y)
+                {
+                    y->parent = node;
+                    y->UpdateMax();
+                }
+                node->UpdateMax();
+                x->UpdateMax();
+                if (node == this->root)
+                {
+                    this->root = x;
+                }
+                return x;
+            }
+
+            Node<K, V>* RotateRight(Node<K, V>* node)
+            {
+                Node<K, V>* x = node->left_child;
+                Node<K, V>* y = x->right_child;
+                x->right_child = node;
+                x->parent = node->parent;
+                node->left_child = y;
+                node->parent = x;
+                if (y)
+                {
+                    y->parent = node;
+                    y->UpdateMax();
+                }
+                node->UpdateMax();
+                x->UpdateMax();
+                if (node == this->root)
+                {
+                    this->root = x;
+                }
+                return x;
+            }
+
             // Recursive functions
             bool Overlapping(const K& range_start, const K& range_end, const Node<K, V>* node)
             {
@@ -440,32 +484,32 @@ namespace UIT
 
                 if (left_left)
                 {
-                    node = node->RotateLeft();
+                    node = this->RotateLeft(node);
                     node->color = Color::BLACK;
                     node->left_child->color = Color::RED;
                     left_left = false;
                 }
                 else if (right_right)
                 {
-                    node = node->RotateRight();
+                    node = this->RotateRight(node);
                     node->color = Color::BLACK;
                     node->right_child->color = Color::RED;
                     right_right = false;
                 }
                 else if (right_left)
                 {
-                    node->right_child = node->right_child->RotateRight();
+                    node->right_child = this->RotateRight(node->right_child);
                     node->right_child->parent = node;
-                    node = node->RotateLeft();
+                    node = this->RotateLeft(node);
                     node->color = Color::BLACK;
                     node->left_child->color = Color::RED;
                     right_left = false;
                 }
                 else if (left_right)
                 {
-                    node->left_child = node->left_child->RotateLeft();
+                    node->left_child = this->RotateLeft(node->left_child);
                     node->left_child->parent = node;
-                    node = node->RotateRight();
+                    node = this->RotateRight(node);
                     node->color = Color::BLACK;
                     node->right_child->color = Color::RED;
                     left_right = false;
@@ -576,32 +620,32 @@ namespace UIT
 
                 if (left_left)
                 {
-                    node = node->RotateLeft();
+                    node = this->RotateLeft(node);
                     node->color = Color::BLACK;
                     node->left_child->color = Color::RED;
                     left_left = false;
                 }
                 else if (right_right)
                 {
-                    node = node->RotateRight();
+                    node = this->RotateRight(node);
                     node->color = Color::BLACK;
                     node->right_child->color = Color::RED;
                     right_right = false;
                 }
                 else if (right_left)
                 {
-                    node->right_child = node->right_child->RotateRight();
+                    node->right_child = this->RotateRight(node->right_child);
                     node->right_child->parent = node;
-                    node = node->RotateLeft();
+                    node = this->RotateLeft(node);
                     node->color = Color::BLACK;
                     node->left_child->color = Color::RED;
                     right_left = false;
                 }
                 else if (left_right)
                 {
-                    node->left_child = node->left_child->RotateLeft();
+                    node->left_child = this->RotateLeft(node->left_child);
                     node->left_child->parent = node;
-                    node = node->RotateRight();
+                    node = this->RotateRight(node);
                     node->color = Color::BLACK;
                     node->right_child->color = Color::RED;
                     left_right = false;
@@ -707,18 +751,19 @@ namespace UIT
                         sibling->color = Color::BLACK;
                         if (sibling->IsLeftChild())
                         {
-                            parent = parent->RotateRight();
+                            parent = this->RotateRight(parent);
                         }
                         else
                         {
-                            parent = parent->RotateLeft();
+                            parent = this->RotateLeft(parent);
                         }
                         this->RemoveRecolor(parent);
                     }
                     else
                     {
                         // Sibling black
-                        if (sibling->right_child->color == Color::RED || sibling->left_child->color == Color::RED)
+                        if ((sibling->right_child && sibling->right_child->color == Color::RED) ||
+                            (sibling->left_child && sibling->left_child->color == Color::RED))
                         {
                             // at least 1 red children
                             if (sibling->left_child != nullptr and sibling->left_child->color == Color::RED)
@@ -727,11 +772,11 @@ namespace UIT
                                 {
                                     sibling->left_child->color = sibling->color;
                                     sibling->color = parent->color;
-                                    parent = parent->RotateRight();
+                                    parent = this->RotateRight(parent);
                                 } else {
                                     sibling->left_child->color = parent->color;
-                                    sibling = sibling->RotateRight();
-                                    parent = parent->RotateLeft();
+                                    sibling = this->RotateRight(sibling);
+                                    parent = this->RotateLeft(parent);
                                 }
                             }
                             else
@@ -739,14 +784,14 @@ namespace UIT
                                 if (sibling->IsLeftChild())
                                 {
                                     sibling->right_child->color = parent->color;
-                                    sibling = sibling->RotateLeft();
-                                    parent = parent->RotateRight();
+                                    sibling = this->RotateLeft(sibling);
+                                    parent = this->RotateRight(parent);
                                 }
                                 else
                                 {
                                     sibling->right_child->color = sibling->color;
                                     sibling->color = parent->color;
-                                    parent = parent->RotateLeft();
+                                    parent = this->RotateLeft(parent);
                                 }
                             }
                             parent->color = Color::BLACK;
