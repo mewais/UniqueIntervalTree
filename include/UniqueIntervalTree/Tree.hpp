@@ -45,6 +45,17 @@ namespace UIT
             {
                 Node<K, V>* x = node->right_child;
                 Node<K, V>* y = x->left_child;
+                if (node->parent)
+                {
+                    if (node->IsLeftChild())
+                    {
+                        node->parent->left_child = x;
+                    }
+                    else
+                    {
+                        node->parent->right_child = x;
+                    }
+                }
                 x->left_child = node;
                 x->parent = node->parent;
                 node->right_child = y;
@@ -67,6 +78,17 @@ namespace UIT
             {
                 Node<K, V>* x = node->left_child;
                 Node<K, V>* y = x->right_child;
+                if (node->parent)
+                {
+                    if (node->IsLeftChild())
+                    {
+                        node->parent->left_child = x;
+                    }
+                    else
+                    {
+                        node->parent->right_child = x;
+                    }
+                }
                 x->right_child = node;
                 x->parent = node->parent;
                 node->left_child = y;
@@ -751,13 +773,13 @@ namespace UIT
                         sibling->color = Color::BLACK;
                         if (sibling->IsLeftChild())
                         {
-                            parent = this->RotateRight(parent);
+                            this->RotateRight(parent);
                         }
                         else
                         {
-                            parent = this->RotateLeft(parent);
+                            this->RotateLeft(parent);
                         }
-                        this->RemoveRecolor(parent);
+                        this->RemoveRecolor(node);
                     }
                     else
                     {
@@ -766,14 +788,16 @@ namespace UIT
                             (sibling->left_child && sibling->left_child->color == Color::RED))
                         {
                             // at least 1 red children
-                            if (sibling->left_child != nullptr and sibling->left_child->color == Color::RED)
+                            if (sibling->left_child != nullptr && sibling->left_child->color == Color::RED)
                             {
                                 if (sibling->IsLeftChild())
                                 {
                                     sibling->left_child->color = sibling->color;
                                     sibling->color = parent->color;
                                     parent = this->RotateRight(parent);
-                                } else {
+                                }
+                                else
+                                {
                                     sibling->left_child->color = parent->color;
                                     sibling = this->RotateRight(sibling);
                                     parent = this->RotateLeft(parent);
@@ -816,7 +840,6 @@ namespace UIT
             void Delete(Node<K, V>* node)
             {
                 Node<K, V>* parent = node->parent;
-                Node<K, V>* sibling = node->GetSibling();
                 Node<K, V>* replacement;
                 if (node->left_child == nullptr && node->right_child == nullptr)
                 {
@@ -834,7 +857,7 @@ namespace UIT
                 {
                     // 1. Deleting a node with two children
                     // 1.1. Get the min leaf node
-                    replacement = node;
+                    replacement = node->right_child;
                     while (replacement->left_child)
                     {
                         replacement = replacement->left_child;
@@ -844,9 +867,8 @@ namespace UIT
                 bool double_black = ((replacement == nullptr || replacement->color == Color::BLACK) &&
                                      (node->color == Color::BLACK));
 
-                if (node->left_child == nullptr && node->right_child == nullptr)
+                if (replacement == nullptr)
                 {
-                    // Leaf node, no children
                     if (node == this->root)
                     {
                         this->root = nullptr;
@@ -855,35 +877,41 @@ namespace UIT
                     {
                         if (double_black)
                         {
-                            this->RemoveRecolor(node);
+                            RemoveRecolor(node);
                         }
                         else
                         {
-                            if (sibling != nullptr)
+                            if (node->GetSibling() != nullptr)
                             {
-                                sibling->color = Color::RED;
+                                node->GetSibling()->color = Color::RED;
                             }
                         }
 
-                        // Delete node from parent
                         if (node->IsLeftChild())
                         {
-                            parent->left_child = nullptr;
+                            node->parent->left_child = nullptr;
+                            node->parent->UpdateMax();
                         }
                         else
                         {
-                            parent->right_child = nullptr;
+                            node->parent->right_child = nullptr;
+                            node->parent->UpdateMax();
                         }
-                        UpdateAllMax(parent);
                     }
                     // Delete node
                     this->DeallocateNode(node);
+                    return;
                 }
-                else if (node->right_child == nullptr || node->left_child == nullptr)
+
+                if (node->left_child == nullptr || node->right_child == nullptr)
                 {
-                    // 1 child only
-                    // Connect replacement and parent
-                    if (node != this->root)
+                    if (node == this->root)
+                    {
+                        this->root = replacement;
+                        replacement->parent = nullptr;
+                        this->DeallocateNode(node);
+                    }
+                    else
                     {
                         if (node->IsLeftChild())
                         {
@@ -893,56 +921,27 @@ namespace UIT
                         {
                             parent->right_child = replacement;
                         }
-                        UpdateAllMax(parent);
-                    }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    replacement->parent = parent;
-                    // Delete node
-                    this->DeallocateNode(node);
-                    // Recolor
-                    if (double_black)
-                    {
-                        this->RemoveRecolor(replacement);
-                    }
-                    else
-                    {
-                        replacement->color = Color::BLACK;
-                    }
-                }
-                else
-                {
-                    // 2 Children
-                    if (node != this->root)
-                    {
-                        if (node->IsLeftChild())
+                        this->DeallocateNode(node);
+                        replacement->parent = parent;
+                        if (double_black)
                         {
-                            parent->left_child = replacement;
+                            // u and v both black, fix double black at u
+                            RemoveRecolor(replacement);
                         }
                         else
                         {
-                            parent->right_child = replacement;
+                            // u or v red, color u black
+                            replacement->color = Color::BLACK;
                         }
                     }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    Node<K, V>* tmp_left_child = replacement->left_child;
-                    Node<K, V>* tmp_right_child = replacement->right_child;
-                    Node<K, V>* tmp_parent = replacement->parent;
-                    replacement->left_child = node->left_child;
-                    replacement->right_child = node->right_child;
-                    replacement->parent = parent;
-                    UpdateAllMax(replacement);
-                    node->left_child = tmp_left_child;
-                    node->right_child = tmp_right_child;
-                    node->left_child = tmp_parent;
-                    // Delete node
-                    this->Delete(node);
+                    return;
                 }
+
+                V* value = &replacement->value;
+                replacement->value = std::move(node->value);
+                node->value = std::move(*value);
+                // Delete node
+                this->Delete(replacement);
             }
 
             void Delete(const K& range_start, const K& range_end, Node<K, V>* node)
@@ -968,7 +967,6 @@ namespace UIT
             void Remove(Node<K, V>* node)
             {
                 Node<K, V>* parent = node->parent;
-                Node<K, V>* sibling = node->GetSibling();
                 Node<K, V>* replacement;
                 if (node->left_child == nullptr && node->right_child == nullptr)
                 {
@@ -986,7 +984,7 @@ namespace UIT
                 {
                     // 1. Deleting a node with two children
                     // 1.1. Get the min leaf node
-                    replacement = node;
+                    replacement = node->right_child;
                     while (replacement->left_child)
                     {
                         replacement = replacement->left_child;
@@ -996,9 +994,8 @@ namespace UIT
                 bool double_black = ((replacement == nullptr || replacement->color == Color::BLACK) &&
                                      (node->color == Color::BLACK));
 
-                if (node->left_child == nullptr && node->right_child == nullptr)
+                if (replacement == nullptr)
                 {
-                    // Leaf node, no children
                     if (node == this->root)
                     {
                         this->root = nullptr;
@@ -1007,37 +1004,38 @@ namespace UIT
                     {
                         if (double_black)
                         {
-                            this->RemoveRecolor(node);
+                            RemoveRecolor(node);
                         }
                         else
                         {
-                            if (sibling != nullptr)
+                            if (node->GetSibling() != nullptr)
                             {
-                                sibling->color = Color::RED;
+                                node->GetSibling()->color = Color::RED;
                             }
                         }
 
-                        // Remove node from parent
                         if (node->IsLeftChild())
                         {
-                            parent->left_child = nullptr;
+                            node->parent->left_child = nullptr;
+                            node->parent->UpdateMax();
                         }
                         else
                         {
-                            parent->right_child = nullptr;
+                            node->parent->right_child = nullptr;
+                            node->parent->UpdateMax();
                         }
-                        UpdateAllMax(parent);
                     }
-                    // Remove node
-                    node->parent = nullptr;
-                    node->right_child = nullptr;
-                    node->left_child = nullptr;
+                    return;
                 }
-                else if (node->right_child == nullptr || node->left_child == nullptr)
+
+                if (node->left_child == nullptr || node->right_child == nullptr)
                 {
-                    // 1 child only
-                    // Connect replacement and parent
-                    if (node != this->root)
+                    if (node == this->root)
+                    {
+                        this->root = replacement;
+                        replacement->parent = nullptr;
+                    }
+                    else
                     {
                         if (node->IsLeftChild())
                         {
@@ -1047,58 +1045,26 @@ namespace UIT
                         {
                             parent->right_child = replacement;
                         }
-                        UpdateAllMax(parent);
-                    }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    replacement->parent = parent;
-                    // Remove node
-                    node->parent = nullptr;
-                    node->right_child = nullptr;
-                    node->left_child = nullptr;
-                    // Recolor
-                    if (double_black)
-                    {
-                        this->RemoveRecolor(replacement);
-                    }
-                    else
-                    {
-                        replacement->color = Color::BLACK;
-                    }
-                }
-                else
-                {
-                    // 2 Children
-                    if (node != this->root)
-                    {
-                        if (node->IsLeftChild())
+                        replacement->parent = parent;
+                        if (double_black)
                         {
-                            parent->left_child = replacement;
+                            // u and v both black, fix double black at u
+                            RemoveRecolor(replacement);
                         }
                         else
                         {
-                            parent->right_child = replacement;
+                            // u or v red, color u black
+                            replacement->color = Color::BLACK;
                         }
                     }
-                    else
-                    {
-                        this->root = replacement;
-                    }
-                    Node<K, V>* tmp_left_child = replacement->left_child;
-                    Node<K, V>* tmp_right_child = replacement->right_child;
-                    Node<K, V>* tmp_parent = replacement->parent;
-                    replacement->left_child = node->left_child;
-                    replacement->right_child = node->right_child;
-                    replacement->parent = parent;
-                    UpdateAllMax(replacement);
-                    node->left_child = tmp_left_child;
-                    node->right_child = tmp_right_child;
-                    node->left_child = tmp_parent;
-                    // Remove node
-                    this->Remove(node);
+                    return;
                 }
+
+                V* value = &replacement->value;
+                replacement->value = std::move(node->value);
+                node->value = std::move(*value);
+                // Delete node
+                this->Remove(replacement);
             }
 
             Node<K, V>* Remove(const K& range_start, const K& range_end, Node<K, V>* node)
@@ -1161,6 +1127,17 @@ namespace UIT
                 return tree;
             }
 
+            void RootCheck()
+            {
+                if (this->root)
+                {
+                    if (this->root->parent)
+                    {
+                        throw InternalError("Root node has a parent!");
+                    }
+                }
+            }
+
         public:
             // Allocation function
             Node<K, V>* AllocateNode(const K& range_start, const K& range_end, V& value, const K& max,
@@ -1181,108 +1158,146 @@ namespace UIT
 
             V& Access(const K& point)
             {
-                return this->Access(point, this->root);
+                V& tmp = this->Access(point, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             V& Access(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                return this->Access(range_start, range_end, this->root);
+                V& tmp = this->Access(range_start, range_end, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             V& Access(const K& point, K& found_range_start, K& found_range_end)
             {
-                return this->Access(point, this->root, found_range_start, found_range_end);
+                V& tmp = this->Access(point, this->root, found_range_start, found_range_end);
+                this->RootCheck();
+                return tmp;
             }
 
             V& Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
+                V& tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
+                this->RootCheck();
+                return tmp;
             }
 
             const V& Access(const K& point) const
             {
-                return this->Access(point, this->root);
+                V& tmp = this->Access(point, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             const V& Access(const K& range_start, const K& range_end) const
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                return this->Access(range_start, range_end, this->root);
+                V& tmp = this->Access(range_start, range_end, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             const V& Access(const K& point, K& found_range_start, K& found_range_end) const
             {
-                return this->Access(point, this->root, found_range_start, found_range_end);
+                V& tmp = this->Access(point, this->root, found_range_start, found_range_end);
+                this->RootCheck();
+                return tmp;
             }
 
             const V& Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end) const
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
+                V& tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& point, V*& ret)
             {
-                return this->Access(point, this->root, ret);
+                bool tmp = this->Access(point, this->root, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, V*& ret)
             {
-                return this->Access(range_start, range_end, this->root, ret);
+                bool tmp = this->Access(range_start, range_end, this->root, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& point, K& found_range_start, K& found_range_end, V*& ret)
             {
-                return this->Access(point, this->root, found_range_start, found_range_end, ret);
+                bool tmp = this->Access(point, this->root, found_range_start, found_range_end, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V*& ret)
             {
-                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+                bool tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& point, V const*& ret)
             {
-                return this->Access(point, this->root, ret);
+                bool tmp = this->Access(point, this->root, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, V const*& ret)
             {
-                return this->Access(range_start, range_end, this->root, ret);
+                bool tmp = this->Access(range_start, range_end, this->root, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& point, K& found_range_start, K& found_range_end, V const*& ret)
             {
-                return this->Access(point, this->root, found_range_start, found_range_end, ret);
+                bool tmp = this->Access(point, this->root, found_range_start, found_range_end, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V const*& ret)
             {
-                return this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+                bool tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Has(const K& point) const
             {
-                return this->Has(point, this->root);
+                bool tmp = this->Has(point, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             bool Has(const K& range_start, const K& range_end) const
             {
-                return this->Has(range_start, range_end, this->root);
+                bool tmp = this->Has(range_start, range_end, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             void Insert(const K& range_start, const K& range_end, V& value)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 this->Insert(range_start, range_end, value, this->root);
+                this->RootCheck();
             }
 
             void Insert(Node<K, V>* insert_node)
             {
                 Tree<K, V, Allocator>::OrderCheck(insert_node->range_start, insert_node->range_end);
                 this->Insert(insert_node, this->root);
+                this->RootCheck();
             }
 
             void GrowEnd(const K& range_start, const K& range_end, const K& new_range_end)
@@ -1294,6 +1309,7 @@ namespace UIT
                     throw RangeExists(range_start, range_end);
                 }
                 this->GrowEnd(range_start, range_end, new_range_end, this->root);
+                this->RootCheck();
             }
 
             void GrowStart(const K& range_start, const K& range_end, const K& new_range_start)
@@ -1303,18 +1319,22 @@ namespace UIT
                 Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
                 to_modify_node->range_start = new_range_start;
                 this->Insert(to_modify_node, this->root);
+                this->RootCheck();
             }
 
             void Delete(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 this->Delete(range_start, range_end, this->root);
+                this->RootCheck();
             }
 
             Node<K, V>* Remove(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
-                return this->Remove(range_start, range_end, this->root);
+                Node<K, V>* tmp = this->Remove(range_start, range_end, this->root);
+                this->RootCheck();
+                return tmp;
             }
 
             void ShrinkEnd(const K& range_start, const K& range_end, const K& new_range_end)
@@ -1322,6 +1342,7 @@ namespace UIT
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Tree<K, V, Allocator>::OrderCheck(new_range_end, range_end);
                 this->ShrinkEnd(range_start, range_end, new_range_end, this->root);
+                this->RootCheck();
             }
 
             void ShrinkStart(const K& range_start, const K& range_end, const K& new_range_start)
@@ -1331,6 +1352,7 @@ namespace UIT
                 Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
                 to_modify_node->range_start = new_range_start;
                 this->Insert(to_modify_node, this->root);
+                this->RootCheck();
             }
 
             std::string ToString(bool addresses = false) const

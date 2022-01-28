@@ -39,5 +39,21 @@ int main(int argc, char** argv)
     std::cout << "Post-insertion:\n";
     std::cout << map.ToString() << "\n";
 
+    map.Delete(0x00007FFFF7FEB000, 0x00007FFFF7FF0CDB);
+    std::cout << "Post-deletion:\n";
+    std::cout << map.ToString(true) << "\n";
+    map.Delete(0x00007FFFF3F3A000, 0x00007FFFF3F3A08F);
+    std::cout << "Post-deletion:\n";
+    std::cout << map.ToString(true) << "\n";
+    map.Delete(0x00007FFFF748B000, 0x00007FFFF75160D4);
+    std::cout << "Post-deletion:\n";
+    std::cout << map.ToString(true) << "\n";
+    map.Delete(0x00007FFFF7B11000, 0x00007FFFF7B36228);
+    std::cout << "Post-deletion:\n";
+    std::cout << map.ToString(true) << "\n";
+    map.Delete(0x00007FFFF7B62620, 0x00007FFFF7B6B208);
+    std::cout << "Post-deletion:\n";
+    std::cout << map.ToString(true) << "\n";
+
     return 0;
 }
