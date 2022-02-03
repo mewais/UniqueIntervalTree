@@ -1127,7 +1127,7 @@ namespace UIT
                 return tree;
             }
 
-            void RootCheck()
+            void RootCheck() const
             {
                 if (this->root)
                 {
