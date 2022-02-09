@@ -940,6 +940,12 @@ namespace UIT
                 V* value = &replacement->value;
                 replacement->value = std::move(node->value);
                 node->value = std::move(*value);
+                K key = replacement->range_start;
+                replacement->range_start = node->range_start;
+                node->range_start = key;
+                key = replacement->range_end;
+                replacement->range_end = node->range_end;
+                node->range_end = key;
                 // Delete node
                 this->Delete(replacement);
             }
@@ -1063,6 +1069,12 @@ namespace UIT
                 V* value = &replacement->value;
                 replacement->value = std::move(node->value);
                 node->value = std::move(*value);
+                K key = replacement->range_start;
+                replacement->range_start = node->range_start;
+                node->range_start = key;
+                key = replacement->range_end;
+                replacement->range_end = node->range_end;
+                node->range_end = key;
                 // Delete node
                 this->Remove(replacement);
             }
