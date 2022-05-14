@@ -937,9 +937,9 @@ namespace UIT
                     return;
                 }
 
-                V* value = &replacement->value;
+                V value = std::move(replacement->value);
                 replacement->value = std::move(node->value);
-                node->value = std::move(*value);
+                node->value = std::move(value);
                 K key = replacement->range_start;
                 replacement->range_start = node->range_start;
                 node->range_start = key;
