@@ -971,7 +971,7 @@ namespace UIT
                 }
             }
 
-            void Remove(Node<K, V>* node)
+            Node<K, V>* Remove(Node<K, V>* node)
             {
                 Node<K, V>* parent = node->parent;
                 Node<K, V>* replacement;
@@ -1032,7 +1032,7 @@ namespace UIT
                             node->parent->UpdateMax();
                         }
                     }
-                    return;
+                    return node;
                 }
 
                 if (node->left_child == nullptr || node->right_child == nullptr)
@@ -1064,12 +1064,12 @@ namespace UIT
                             replacement->color = Color::BLACK;
                         }
                     }
-                    return;
+                    return node;
                 }
 
-                V* value = &replacement->value;
+                V value = std::move(replacement->value);
                 replacement->value = std::move(node->value);
-                node->value = std::move(*value);
+                node->value = std::move(value);
                 K key = replacement->range_start;
                 replacement->range_start = node->range_start;
                 node->range_start = key;
@@ -1077,7 +1077,7 @@ namespace UIT
                 replacement->range_end = node->range_end;
                 node->range_end = key;
                 // Delete node
-                this->Remove(replacement);
+                return this->Remove(replacement);
             }
 
             Node<K, V>* Remove(const K& range_start, const K& range_end, Node<K, V>* node)
@@ -1088,8 +1088,7 @@ namespace UIT
                 }
                 if (node->IsSame(range_start, range_end))
                 {
-                    this->Remove(node);
-                    return node;
+                    return this->Remove(node);
                 }
                 else if (node->left_child && node->left_child->max > range_start)
                 {
