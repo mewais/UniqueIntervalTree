@@ -483,7 +483,7 @@ namespace UIT
 
                 if (uit_unlikely(node->IsOverlapping(range_start, range_end)))
                 {
-                    throw RangeExists(range_start, range_end);
+                    throw RangeExists(range_start, range_end, node->range_start, node->range_end);
                 }
                 if (range_start < node->range_start)
                 {
@@ -619,7 +619,8 @@ namespace UIT
 
                 if (uit_unlikely(node->IsOverlapping(insert_node->range_start, insert_node->range_end)))
                 {
-                    throw RangeExists(insert_node->range_start, insert_node->range_end);
+                    throw RangeExists(insert_node->range_start, insert_node->range_end, node->range_start,
+                                      node->range_end);
                 }
                 if (insert_node->range_start < node->range_start)
                 {

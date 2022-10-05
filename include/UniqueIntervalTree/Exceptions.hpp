@@ -97,19 +97,33 @@ namespace UIT
         private:
             K range_start;
             K range_end;
+            K existing_range_start;
+            K existing_range_end;
             std::stringstream ss;
 
         public:
-            RangeExists(const K& range_start, const K& range_end)
+            RangeExists(const K& range_start, const K& range_end, const K& existing_range_start = 0,
+                        const K& existing_range_end = 0)
             {
                 this->range_start = range_start;
                 this->range_end = range_end;
+                this->existing_range_start = existing_range_start;
+                this->existing_range_end = existing_range_end;
             }
 
             const char* what() noexcept
             {
-                this->ss << "Range [" << this->range_start << ", " << this->range_end <<
-                            ") overlaps with an existing range in the tree";
+                if (this->existing_range_start)
+                {
+                    this->ss << "Range [" << this->range_start << ", " << this
+                            ->range_end << ") overlaps with existing range [" << this
+                                     ->existing_range_start << ", " << this->existing_range_end << ") in the tree";
+                }
+                else
+                {
+                    this->ss << "Range [" << this->range_start << ", " << this->range_end <<
+                             ") overlaps with an existing range in the tree";
+                }
                 return this->ss.str().c_str();
             }
     };
