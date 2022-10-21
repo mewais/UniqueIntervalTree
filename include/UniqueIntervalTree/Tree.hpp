@@ -1139,13 +1139,13 @@ namespace UIT
                 return tree;
             }
 
-            void RootCheck() const
+            void RootCheck(std::string location) const
             {
                 if (this->root)
                 {
                     if (this->root->parent)
                     {
-                        throw InternalError("Root node has a parent!");
+                        throw InternalError("Root node has a parent after executing " + location);
                     }
                 }
             }
@@ -1171,7 +1171,6 @@ namespace UIT
             V& Access(const K& point)
             {
                 V& tmp = this->Access(point, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
@@ -1179,14 +1178,12 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 V& tmp = this->Access(range_start, range_end, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
             V& Access(const K& point, K& found_range_start, K& found_range_end)
             {
                 V& tmp = this->Access(point, this->root, found_range_start, found_range_end);
-                this->RootCheck();
                 return tmp;
             }
 
@@ -1194,14 +1191,12 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 V& tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
-                this->RootCheck();
                 return tmp;
             }
 
             const V& Access(const K& point) const
             {
                 V& tmp = this->Access(point, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
@@ -1209,14 +1204,12 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 V& tmp = this->Access(range_start, range_end, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
             const V& Access(const K& point, K& found_range_start, K& found_range_end) const
             {
                 V& tmp = this->Access(point, this->root, found_range_start, found_range_end);
-                this->RootCheck();
                 return tmp;
             }
 
@@ -1224,77 +1217,66 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 V& tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& point, V*& ret)
             {
                 bool tmp = this->Access(point, this->root, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, V*& ret)
             {
                 bool tmp = this->Access(range_start, range_end, this->root, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& point, K& found_range_start, K& found_range_end, V*& ret)
             {
                 bool tmp = this->Access(point, this->root, found_range_start, found_range_end, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V*& ret)
             {
                 bool tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& point, V const*& ret)
             {
                 bool tmp = this->Access(point, this->root, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, V const*& ret)
             {
                 bool tmp = this->Access(range_start, range_end, this->root, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& point, K& found_range_start, K& found_range_end, V const*& ret)
             {
                 bool tmp = this->Access(point, this->root, found_range_start, found_range_end, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Access(const K& range_start, const K& range_end, K& found_range_start, K& found_range_end, V const*& ret)
             {
                 bool tmp = this->Access(range_start, range_end, this->root, found_range_start, found_range_end, ret);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Has(const K& point) const
             {
                 bool tmp = this->Has(point, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
             bool Has(const K& range_start, const K& range_end) const
             {
                 bool tmp = this->Has(range_start, range_end, this->root);
-                this->RootCheck();
                 return tmp;
             }
 
@@ -1302,14 +1284,14 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 this->Insert(range_start, range_end, value, this->root);
-                this->RootCheck();
+                this->RootCheck("Insert Range");
             }
 
             void Insert(Node<K, V>* insert_node)
             {
                 Tree<K, V, Allocator>::OrderCheck(insert_node->range_start, insert_node->range_end);
                 this->Insert(insert_node, this->root);
-                this->RootCheck();
+                this->RootCheck("Insert Node");
             }
 
             void GrowEnd(const K& range_start, const K& range_end, const K& new_range_end)
@@ -1321,7 +1303,7 @@ namespace UIT
                     throw RangeExists(range_start, range_end);
                 }
                 this->GrowEnd(range_start, range_end, new_range_end, this->root);
-                this->RootCheck();
+                this->RootCheck("Grow End");
             }
 
             void GrowStart(const K& range_start, const K& range_end, const K& new_range_start)
@@ -1331,21 +1313,21 @@ namespace UIT
                 Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
                 to_modify_node->range_start = new_range_start;
                 this->Insert(to_modify_node, this->root);
-                this->RootCheck();
+                this->RootCheck("Grow Start");
             }
 
             void Delete(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 this->Delete(range_start, range_end, this->root);
-                this->RootCheck();
+                this->RootCheck("Delete");
             }
 
             Node<K, V>* Remove(const K& range_start, const K& range_end)
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Node<K, V>* tmp = this->Remove(range_start, range_end, this->root);
-                this->RootCheck();
+                this->RootCheck("Remove");
                 return tmp;
             }
 
@@ -1354,7 +1336,7 @@ namespace UIT
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 Tree<K, V, Allocator>::OrderCheck(new_range_end, range_end);
                 this->ShrinkEnd(range_start, range_end, new_range_end, this->root);
-                this->RootCheck();
+                this->RootCheck("Shrink End");
             }
 
             void ShrinkStart(const K& range_start, const K& range_end, const K& new_range_start)
@@ -1364,7 +1346,7 @@ namespace UIT
                 Node<K, V>* to_modify_node = this->Remove(range_start, range_end, this->root);
                 to_modify_node->range_start = new_range_start;
                 this->Insert(to_modify_node, this->root);
-                this->RootCheck();
+                this->RootCheck("Shrink Start");
             }
 
             std::string ToString(bool addresses = false) const
