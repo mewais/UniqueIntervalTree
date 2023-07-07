@@ -33,8 +33,16 @@ namespace UIT
 
             Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires Buildable<V> : range_start(range_start), range_end(range_end), max(max), parent(parent),
-                 color(color), left_child(left_child), right_child(right_child)
+                 requires std::is_fundamental_v<V> : range_start(range_start), range_end(range_end),
+                 range_value(range_value), max(max), parent(parent), color(color), left_child(left_child),
+                 right_child(right_child)
+            {
+            }
+
+            Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires Buildable<V> && (!std::is_fundamental_v<V>) : range_start(range_start), range_end(range_end),
+                 max(max), parent(parent), color(color), left_child(left_child), right_child(right_child)
             {
                 if (std::is_move_constructible_v<V>)
                 {
