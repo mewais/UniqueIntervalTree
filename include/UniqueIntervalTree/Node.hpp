@@ -34,9 +34,40 @@ namespace UIT
             Node* right_child;
 
             Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires std::is_move_constructible_v<V> : range_start(range_start), range_end(range_end),
+                 value(std::move(value)), max(max), parent(parent), color(color), left_child(left_child),
+                 right_child(right_child)
+            {
+            }
+
+            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires std::is_copy_constructible_v<V> : range_start(range_start), range_end(range_end),
+                 value(value), max(max), parent(parent), color(color), left_child(left_child), right_child(right_child)
+            {
+            }
+
+            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires std::is_move_assignable_v<V> : range_start(range_start), range_end(range_end), max(max),
+                 parent(parent), color(color), left_child(left_child), right_child(right_child)
+            {
+                this->value = std::move(value);
+            }
+
+            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires std::is_copy_assignable_v<V> : range_start(range_start), range_end(range_end), max(max),
+                 parent(parent), color(color), left_child(left_child), right_child(right_child)
+            {
+                this->value = value;
+            }
+
+            Node(const K& range_start, const K& range_end, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr) :
-                 range_start(range_start), range_end(range_end), value(std::move(value)), max(max), parent(parent),
-                 color(color), left_child(left_child), right_child(right_child)
+                 range_start(range_start), range_end(range_end), max(max), parent(parent), color(color),
+                 left_child(left_child), right_child(right_child)
             {
             }
 
