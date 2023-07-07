@@ -472,11 +472,11 @@ namespace UIT
                 {
                     if (uit_unlikely(this->root == nullptr))
                     {
-                        node = this->AllocateNode(range_start, range_end, value, range_end, parent, Color::BLACK);
+                        node = this->AllocateValueNode(range_start, range_end, value, range_end, parent, Color::BLACK);
                     }
                     else
                     {
-                        node = this->AllocateNode(range_start, range_end, value, range_end, parent);
+                        node = this->AllocateValueNode(range_start, range_end, value, range_end, parent);
                     }
                     return node;
                 }
@@ -497,6 +497,140 @@ namespace UIT
                 else
                 {
                     node->right_child = this->Insert(range_start, range_end, value, node->right_child, node);
+                    node->right_child->parent = node;
+                    if (node != this->root && node->color == Color::RED && node->right_child->color == Color::RED)
+                    {
+                        conflict = true;
+                    }
+                }
+
+                if (left_left)
+                {
+                    node = this->RotateLeft(node);
+                    node->color = Color::BLACK;
+                    node->left_child->color = Color::RED;
+                    left_left = false;
+                }
+                else if (right_right)
+                {
+                    node = this->RotateRight(node);
+                    node->color = Color::BLACK;
+                    node->right_child->color = Color::RED;
+                    right_right = false;
+                }
+                else if (right_left)
+                {
+                    node->right_child = this->RotateRight(node->right_child);
+                    node->right_child->parent = node;
+                    node = this->RotateLeft(node);
+                    node->color = Color::BLACK;
+                    node->left_child->color = Color::RED;
+                    right_left = false;
+                }
+                else if (left_right)
+                {
+                    node->left_child = this->RotateLeft(node->left_child);
+                    node->left_child->parent = node;
+                    node = this->RotateRight(node);
+                    node->color = Color::BLACK;
+                    node->right_child->color = Color::RED;
+                    left_right = false;
+                }
+
+                if (conflict)
+                {
+                    if(node->IsRightChild())
+                    {
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
+                        {
+                            if(node->left_child != nullptr && node->left_child->color == Color::RED)
+                            {
+                                right_left = true;
+                            }
+                            else if(node->right_child != nullptr && node->right_child->color == Color::RED)
+                            {
+                                left_left = true;
+                            }
+                        }
+                        else
+                        {
+                            node->GetSibling()->color = Color::BLACK;
+                            node->color = Color::BLACK;
+                            if(node->parent != this->root)
+                            {
+                                node->parent->color = Color::RED;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(node->GetSibling() == nullptr || node->GetSibling()->color == Color::BLACK)
+                        {
+                            if(node->left_child != nullptr && node->left_child->color == Color::RED)
+                            {
+                                right_right = true;
+                            }
+                            else if(node->right_child != nullptr && node->right_child->color == Color::RED)
+                            {
+                                left_right = true;
+                            }
+                        }
+                        else
+                        {
+                            node->GetSibling()->color = Color::BLACK;
+                            node->color = Color::BLACK;
+                            if(node->parent != this->root)
+                            {
+                                node->parent->color = Color::RED;
+                            }
+                        }
+                    }
+                }
+
+                // Update max
+                node->UpdateMax();
+
+                return node;
+            }
+
+            Node<K, V>* Insert(const K& range_start, const K& range_end, Node<K, V>*& node, Node<K, V>* parent = nullptr)
+            {
+                bool conflict = false;
+                static bool left_left = false;
+                static bool left_right = false;
+                static bool right_right = false;
+                static bool right_left = false;
+
+                // Insert somewhere
+                if (node == nullptr)
+                {
+                    if (uit_unlikely(this->root == nullptr))
+                    {
+                        node = this->AllocateEmptyNode(range_start, range_end, range_end, parent, Color::BLACK);
+                    }
+                    else
+                    {
+                        node = this->AllocateEmptyNode(range_start, range_end, range_end, parent);
+                    }
+                    return node;
+                }
+
+                if (uit_unlikely(node->IsOverlapping(range_start, range_end)))
+                {
+                    throw RangeExists(range_start, range_end, node->range_start, node->range_end);
+                }
+                if (range_start < node->range_start)
+                {
+                    node->left_child = this->Insert(range_start, range_end, node->left_child, node);
+                    node->left_child->parent = node;
+                    if (node != this->root && node->color == Color::RED && node->left_child->color == Color::RED)
+                    {
+                        conflict = true;
+                    }
+                }
+                else
+                {
+                    node->right_child = this->Insert(range_start, range_end, node->right_child, node);
                     node->right_child->parent = node;
                     if (node != this->root && node->color == Color::RED && node->right_child->color == Color::RED)
                     {
@@ -1152,13 +1286,23 @@ namespace UIT
 
         public:
             // Allocation function
-            Node<K, V>* AllocateNode(const K& range_start, const K& range_end, V& value, const K& max,
-                                     Node<K, V>* parent = nullptr, Color color = Color::RED,
-                                     Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+            Node<K, V>* AllocateValueNode(const K& range_start, const K& range_end, V& value, const K& max,
+                                          Node<K, V>* parent = nullptr, Color color = Color::RED,
+                                          Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
             {
                 Node<K, V>* node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
                 std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end,
                                                             value, max, parent, color, left_child, right_child);
+                return node;
+            }
+
+            Node<K, V>* AllocateEmptyNode(const K& range_start, const K& range_end, const K& max,
+                                          Node<K, V>* parent = nullptr, Color color = Color::RED,
+                                          Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+            {
+                Node<K, V>* node = std::allocator_traits<Allocator>::allocate(this->node_allocator, 1);
+                std::allocator_traits<Allocator>::construct(this->node_allocator, node, range_start, range_end, max,
+                                                            parent, color, left_child, right_child);
                 return node;
             }
 
@@ -1284,6 +1428,13 @@ namespace UIT
             {
                 Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
                 this->Insert(range_start, range_end, value, this->root);
+                this->RootCheck("Insert Range");
+            }
+
+            void Insert(const K& range_start, const K& range_end)
+            {
+                Tree<K, V, Allocator>::OrderCheck(range_start, range_end);
+                this->Insert(range_start, range_end, this->root);
                 this->RootCheck("Insert Range");
             }
 
