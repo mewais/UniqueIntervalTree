@@ -8,14 +8,13 @@
 #include <string>
 
 #include "Utils.hpp"
+#include "Concepts.hpp"
 #include "Node.hpp"
 #include "Exceptions.hpp"
 
 namespace UIT
 {
-    template <class K, class V, class Allocator = std::allocator<Node<K, V>>>
-    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K> &&
-             (Buildable<V> || std::is_default_constructible_v<V>)
+    template <KeyType K, ValueType V, class Allocator = std::allocator<Node<K, V>>>
     class Tree
     {
         public:

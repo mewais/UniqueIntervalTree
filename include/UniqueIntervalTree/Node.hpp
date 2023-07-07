@@ -5,7 +5,6 @@
 #define _UNIQUEINTERVALTREE_NODE_HPP_
 
 #include <cstdint>
-#include <concepts>
 #include <algorithm>
 #include <sstream>
 
@@ -19,41 +18,39 @@ namespace UIT
         BLACK,
     };
 
-    template <class K, class V>
-    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K> &&
-             (Buildable<V> || std::is_default_constructible_v<V>)
+    template <KeyType K, ValueType V>
     class Node
     {
         public:
             K range_start;
             K range_end;
-            V value;
+            V range_value;
             K max;
             Node* parent;
             Color color;
             Node* left_child;
             Node* right_child;
 
-            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
+            Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
                  requires Buildable<V> : range_start(range_start), range_end(range_end), max(max), parent(parent),
                  color(color), left_child(left_child), right_child(right_child)
             {
                 if (std::is_move_constructible_v<V>)
                 {
-                    this->value(std::move(value));
+                    this->range_value(std::move(range_value));
                 }
                 else if (std::is_copy_constructible_v<V>)
                 {
-                    this->value(value);
+                    this->range_value(range_value);
                 }
                 else if (std::is_move_assignable_v<V>)
                 {
-                    this->value = std::move(value);
+                    this->range_value = std::move(range_value);
                 }
                 else if (std::is_copy_assignable_v<V>)
                 {
-                    this->value = value;
+                    this->range_value = range_value;
                 }
             }
 
