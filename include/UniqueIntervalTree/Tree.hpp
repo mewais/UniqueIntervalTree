@@ -167,7 +167,7 @@ namespace UIT
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > point)
                 {
@@ -184,7 +184,7 @@ namespace UIT
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > range_start)
                 {
@@ -203,7 +203,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > point)
                 {
@@ -223,7 +223,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > range_start)
                 {
@@ -240,7 +240,7 @@ namespace UIT
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > point)
                 {
@@ -257,7 +257,7 @@ namespace UIT
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > range_start)
                 {
@@ -276,7 +276,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > point)
                 {
@@ -296,7 +296,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    return node->value;
+                    return node->range_value;
                 }
                 if (node->left_child && node->left_child->max > range_start)
                 {
@@ -313,7 +313,7 @@ namespace UIT
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > point)
@@ -331,7 +331,7 @@ namespace UIT
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > range_start)
@@ -351,7 +351,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > point)
@@ -372,7 +372,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > range_start)
@@ -390,7 +390,7 @@ namespace UIT
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > point)
@@ -408,7 +408,7 @@ namespace UIT
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > range_start)
@@ -428,7 +428,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > point)
@@ -449,7 +449,7 @@ namespace UIT
                 {
                     found_range_start = node->range_start;
                     found_range_end = node->range_end;
-                    ret = &node->value;
+                    ret = &node->range_value;
                     return true;
                 }
                 if (node->left_child && node->left_child->max > range_start)
@@ -1072,9 +1072,9 @@ namespace UIT
                     return;
                 }
 
-                V value = std::move(replacement->value);
-                replacement->value = std::move(node->value);
-                node->value = std::move(value);
+                V value = std::move(replacement->range_value);
+                replacement->range_value = std::move(node->range_value);
+                node->range_value = std::move(value);
                 K key = replacement->range_start;
                 replacement->range_start = node->range_start;
                 node->range_start = key;
@@ -1201,9 +1201,9 @@ namespace UIT
                     return node;
                 }
 
-                V value = std::move(replacement->value);
-                replacement->value = std::move(node->value);
-                node->value = std::move(value);
+                V value = std::move(replacement->range_value);
+                replacement->range_value = std::move(node->range_value);
+                node->range_value = std::move(value);
                 K key = replacement->range_start;
                 replacement->range_start = node->range_start;
                 node->range_start = key;
