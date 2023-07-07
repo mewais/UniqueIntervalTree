@@ -14,7 +14,8 @@
 namespace UIT
 {
     template <class K, class V, class Allocator = std::allocator<Node<K, V>>>
-    requires std::equality_comparable<K> && std::totally_ordered<K>
+    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K> &&
+             (Buildable<V> || std::is_default_constructible_v<V>)
     class Tree
     {
         public:

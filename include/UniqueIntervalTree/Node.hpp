@@ -20,7 +20,8 @@ namespace UIT
     };
 
     template <class K, class V>
-    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K>
+    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K> &&
+             (Buildable<V> || std::is_default_constructible_v<V>)
     class Node
     {
         public:
@@ -35,39 +36,31 @@ namespace UIT
 
             Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_move_constructible_v<V> : range_start(range_start), range_end(range_end),
-                 value(std::move(value)), max(max), parent(parent), color(color), left_child(left_child),
-                 right_child(right_child)
+                 requires Buildable<V> : range_start(range_start), range_end(range_end), max(max), parent(parent),
+                 color(color), left_child(left_child), right_child(right_child)
             {
-            }
-
-            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_copy_constructible_v<V> : range_start(range_start), range_end(range_end),
-                 value(value), max(max), parent(parent), color(color), left_child(left_child), right_child(right_child)
-            {
-            }
-
-            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_move_assignable_v<V> : range_start(range_start), range_end(range_end), max(max),
-                 parent(parent), color(color), left_child(left_child), right_child(right_child)
-            {
-                this->value = std::move(value);
-            }
-
-            Node(const K& range_start, const K& range_end, V& value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_copy_assignable_v<V> : range_start(range_start), range_end(range_end), max(max),
-                 parent(parent), color(color), left_child(left_child), right_child(right_child)
-            {
-                this->value = value;
+                if (std::is_move_constructible_v<V>)
+                {
+                    this->value(std::move(value));
+                }
+                else if (std::is_copy_constructible_v<V>)
+                {
+                    this->value(value);
+                }
+                else if (std::is_move_assignable_v<V>)
+                {
+                    this->value = std::move(value);
+                }
+                else if (std::is_copy_assignable_v<V>)
+                {
+                    this->value = value;
+                }
             }
 
             Node(const K& range_start, const K& range_end, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr) :
-                 range_start(range_start), range_end(range_end), max(max), parent(parent), color(color),
-                 left_child(left_child), right_child(right_child)
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires std::is_default_constructible_v<V> : range_start(range_start), range_end(range_end), max(max),
+                 parent(parent), color(color), left_child(left_child), right_child(right_child)
             {
             }
 
