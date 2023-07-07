@@ -5,10 +5,17 @@ An interval tree is a special type of tree structure that is used to find any nu
 
 ## Implementation
 This is a C++ implementation for a special type of an interval tree. Specifically, interval trees usually allow overlapping ranges or intervals to exist within the tree, but this implementation does not, hence the name `UniqueIntervalTree`.  
-This is a header only implementation, based on a red black tree. The implementation is templated and can work with any type of key and value provided that the key type adheres to the following restrictions:
-1. Must be comparable (i.e. must support/override the `==` and `!=` operators)
-2. Must be totally ordered (i.e. must support/override the `<`, `<=`, `>`, and `>=` operators)
-3. Must be printable (i.e. must support the `<<` stream operator)
+This is a header only implementation, based on a red black tree. The implementation is templated and can work with any type of key and value provided the following:
+1. The key type adheres to the following restrictions:
+   1. Must be comparable (i.e. must support/override the `==` and `!=` operators)
+   2. Must be totally ordered (i.e. must support/override the `<`, `<=`, `>`, and `>=` operators)
+   3. Must be printable (i.e. must support the `<<` stream operator)
+2. The value type adheres to at least ONE OF the following restrictions:
+   1. Be default constructible
+   2. Be move constructible
+   3. Be copy constructible
+   4. Be move assignable
+   5. Be copy assignable
 
 ## Usage
 Add `#include "UniqueIntervalTree/Tree.hpp"` in your source file. Then use any of the API functions in the following example:
@@ -16,6 +23,7 @@ Add `#include "UniqueIntervalTree/Tree.hpp"` in your source file. Then use any o
 UIT::Tree<KeyType, ValueType> tree;
 // Insertion and Deletion
 tree.Insert(range_start, range_end, value);
+tree.Insert(range_start, range_end);
 tree.Delete(range_start, range_end);
 // Checking
 bool ret = tree.Has(point);
