@@ -20,29 +20,30 @@ namespace UIT
         private:
             K range_start;
             K range_end;
-            std::stringstream ss;
+            std::string str;
 
         public:
             InvalidRangeException(const K& range_start, const K& range_end)
             {
+                std::stringstream ss;
                 this->range_start = range_start;
                 this->range_end = range_end;
-            }
-
-            const char* what() noexcept
-            {
                 if (this->range_end < this->range_start)
                 {
-                    this->ss << "Range end value cannot be lower than start value: [" << this->range_start << ", " <<
-                                this->range_end << ")";
-                    return this->ss.str().c_str();
+                    ss << "Range end value cannot be lower than start value: [" << this->range_start << ", " <<
+                          this->range_end << ")";
                 }
                 if (this->range_end == this->range_start)
                 {
-                    this->ss << "Range must start and end at different values: [" << this->range_start << ", " <<
-                                this->range_end << ")";
-                    return this->ss.str().c_str();
+                    ss << "Range must start and end at different values: [" << this->range_start << ", " <<
+                          this->range_end << ")";
                 }
+                this->str = ss.str();
+            }
+
+            const char* what() const noexcept override
+            {
+                return this->str.c_str();
             }
     };
 
@@ -52,18 +53,20 @@ namespace UIT
     {
         private:
             K point;
-            std::stringstream ss;
+            std::string str;
 
         public:
             explicit PointNotFound(const K& point)
             {
+                std::stringstream ss;
                 this->point = point;
+                ss << "Point " << this->point << " was not found in the tree";
+                this->str = ss.str();
             }
 
-            const char* what() noexcept
+            const char* what() const noexcept override
             {
-                this->ss << "Point " << this->point << " was not found in the tree";
-                return this->ss.str().c_str();
+                return this->str.c_str();
             }
     };
 
@@ -74,19 +77,21 @@ namespace UIT
         private:
             K range_start;
             K range_end;
-            std::stringstream ss;
+            std::string str;
 
         public:
             RangeNotFound(const K& range_start, const K& range_end)
             {
+                std::stringstream ss;
                 this->range_start = range_start;
                 this->range_end = range_end;
+                ss << "Range [" << this->range_start << ", " << this->range_end << ") was not found in the tree";
+                this->str = ss.str();
             }
 
-            const char* what() noexcept
+            const char* what() const noexcept override
             {
-                this->ss << "Range [" << this->range_start << ", " << this->range_end << ") was not found in the tree";
-                return this->ss.str().c_str();
+                return this->str.c_str();
             }
     };
 
@@ -99,32 +104,34 @@ namespace UIT
             K range_end;
             K existing_range_start;
             K existing_range_end;
-            std::stringstream ss;
+            std::string str;
 
         public:
             RangeExists(const K& range_start, const K& range_end, const K& existing_range_start = 0,
                         const K& existing_range_end = 0)
             {
+                std::stringstream ss;
                 this->range_start = range_start;
                 this->range_end = range_end;
                 this->existing_range_start = existing_range_start;
                 this->existing_range_end = existing_range_end;
-            }
-
-            const char* what() noexcept
-            {
                 if (this->existing_range_start)
                 {
-                    this->ss << "Range [" << this->range_start << ", " << this
-                            ->range_end << ") overlaps with existing range [" << this
-                                     ->existing_range_start << ", " << this->existing_range_end << ") in the tree";
+                    ss << "Range [" << this->range_start << ", " << this->range_end <<
+                          ") overlaps with existing range [" << this->existing_range_start << ", " <<
+                          this->existing_range_end << ") in the tree";
                 }
                 else
                 {
-                    this->ss << "Range [" << this->range_start << ", " << this->range_end <<
-                             ") overlaps with an existing range in the tree";
+                    ss << "Range [" << this->range_start << ", " << this->range_end <<
+                          ") overlaps with an existing range in the tree";
                 }
-                return this->ss.str().c_str();
+                this->str = ss.str();
+            }
+
+            const char* what() const noexcept override
+            {
+                return this->str.c_str();
             }
     };
 
@@ -140,7 +147,7 @@ namespace UIT
                 this->error += "\n\tPlease submit an issue on: https://github.com/mewais/UniqueIntervalTree/issues";
             }
 
-            const char* what() noexcept
+            const char* what() const noexcept override
             {
                 return this->error.c_str();
             }
