@@ -89,11 +89,19 @@ namespace UIT
 
             bool IsLeftChild() const
             {
+                if (this->parent == nullptr)
+                {
+                    return false;
+                }
                 return this == this->parent->left_child;
             }
 
             bool IsRightChild() const
             {
+                if (this->parent == nullptr)
+                {
+                    return false;
+                }
                 return this == this->parent->right_child;
             }
 
