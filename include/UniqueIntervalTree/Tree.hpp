@@ -6,13 +6,12 @@
 
 #include <memory>
 #include <string>
-#include <iterator>
-#include <cstddef>
 
 #include "Utils.hpp"
 #include "Concepts.hpp"
 #include "Node.hpp"
 #include "Exceptions.hpp"
+#include "Iterators.hpp"
 
 namespace UIT
 {
@@ -22,112 +21,6 @@ namespace UIT
         public:
             Allocator node_allocator;
             Node<K, V>* root;
-
-            // Very useful guide: https://www.internalpointers.com/post/writing-custom-iterators-modern-cpp
-            template <class T>
-            class Iterator
-            {
-                public:
-                    using iterator_category = std::bidirectional_iterator_tag;
-                    using difference_type = std::ptrdiff_t;
-                    using value_type = T;
-                    using pointer = T*;
-                    using reference = T&;
-
-                private:
-                    pointer m_ptr;
-
-                public:
-                    Iterator(pointer ptr) : m_ptr(ptr) {}
-
-                    reference operator*() const
-                    {
-                        return *m_ptr;
-                    }
-                    pointer operator->()
-                    {
-                        return m_ptr;
-                    }
-
-                    Iterator& operator++()
-                    {
-                        if (!m_ptr)
-                        {
-                            return *this;
-                        }
-                        if (m_ptr->right_child)
-                        {
-                            // From our location, incrementing means going to the leftmost child of the right child
-                            m_ptr = m_ptr->right_child;
-                            while (m_ptr->left_child)
-                            {
-                                m_ptr = m_ptr->left_child;
-                            }
-                        }
-                        else
-                        {
-                            // If the current location has no right child, we need to go up until we find a node that is
-                            // the left child of its parent
-                            while (m_ptr && m_ptr->IsRightChild())
-                            {
-                                m_ptr = m_ptr->parent;
-                            }
-                            m_ptr = m_ptr->parent;
-                        }
-                        return *this;
-                    }
-
-                    Iterator& operator--()
-                    {
-                        if (!m_ptr)
-                        {
-                            return *this;
-                        }
-                        if (m_ptr->left_child)
-                        {
-                            // From our location, decrementing means going to the rightmost child of the left child
-                            m_ptr = m_ptr->left_child;
-                            while (m_ptr->right_child)
-                            {
-                                m_ptr = m_ptr->right_child;
-                            }
-                        }
-                        else
-                        {
-                            // If the current location has no left child, we need to go up until we find a node that is
-                            // the right child of its parent
-                            while (m_ptr && m_ptr->IsLeftChild())
-                            {
-                                m_ptr = m_ptr->parent;
-                            }
-                            m_ptr = m_ptr->parent;
-                        }
-                        return *this;
-                    }
-
-                    Iterator operator++(int)
-                    {
-                        Iterator tmp = *this;
-                        ++(*this);
-                        return tmp;
-                    }
-
-                    Iterator operator--(int)
-                    {
-                        Iterator tmp = *this;
-                        --(*this);
-                        return tmp;
-                    }
-
-                    friend bool operator==(const Iterator& a, const Iterator& b)
-                    {
-                        return a.m_ptr == b.m_ptr;
-                    }
-                    friend bool operator!=(const Iterator& a, const Iterator& b)
-                    {
-                        return a.m_ptr != b.m_ptr;
-                    }
-            };
 
             using iterator = Iterator<Node<K,V>>;
             using const_iterator = Iterator<const Node<K,V>>;
@@ -143,27 +36,42 @@ namespace UIT
                 {
                     node = node->left_child;
                 }
-                return iterator(node);
+                return iterator(node, this->root);
             }
 
             iterator end()
             {
-                return iterator(nullptr);
+                return iterator(nullptr, this->root);
             }
 
-            const_iterator cbegin()
+            const_iterator begin() const
             {
                 Node<K, V>* node = root;
                 while (node && node->left_child)
                 {
                     node = node->left_child;
                 }
-                return const_iterator(node);
+                return const_iterator(node, this->root);
             }
 
-            const_iterator cend()
+            const_iterator end() const
             {
-                return const_iterator(nullptr);
+                return const_iterator(nullptr, this->root);
+            }
+
+            const_iterator cbegin() const
+            {
+                Node<K, V>* node = root;
+                while (node && node->left_child)
+                {
+                    node = node->left_child;
+                }
+                return const_iterator(node, this->root);
+            }
+
+            const_iterator cend() const
+            {
+                return const_iterator(nullptr, this->root);
             }
 
             reverse_iterator rbegin()
@@ -176,12 +84,22 @@ namespace UIT
                 return reverse_iterator(begin());
             }
 
-            const_reverse_iterator crbegin()
+            const_reverse_iterator rbegin() const
+            {
+                return const_reverse_iterator(end());
+            }
+
+            const_reverse_iterator rend() const
+            {
+                return const_reverse_iterator(begin());
+            }
+
+            const_reverse_iterator crbegin() const
             {
                 return const_reverse_iterator(cend());
             }
 
-            const_reverse_iterator crend()
+            const_reverse_iterator crend() const
             {
                 return const_reverse_iterator(cbegin());
             }

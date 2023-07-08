@@ -51,5 +51,10 @@ int main(int argc, char** argv)
         std::cout << "it: " << it->range_start << ", " << it->range_end << ": " << it->range_value << "\n";
     }
 
+    for (auto it = map.rbegin(); it != map.rend(); ++it)
+    {
+        std::cout << "it: " << it->range_start << ", " << it->range_end << ": " << it->range_value << "\n";
+    }
+
     return 0;
 }
