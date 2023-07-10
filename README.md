@@ -14,9 +14,6 @@ This is a header only implementation, based on a red black tree. The implementat
    1. Be default constructible
    2. Be move constructible
    3. Be copy constructible
-3. The value type adheres to at least ONE OF the following restrictions:
-   1. Be move assignable
-   2. Be copy assignable
 
 ## Usage
 Add `#include "UniqueIntervalTree/Tree.hpp"` in your source file. Then use any of the API functions in the following example:

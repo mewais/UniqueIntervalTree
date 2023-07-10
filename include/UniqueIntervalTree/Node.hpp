@@ -66,45 +66,11 @@ namespace UIT
             {
             }
 
-            // Move assignment
-            Node& operator=(Node&& other) noexcept requires std::is_fundamental_v<V>
-            {
-                this->range_start = other.range_start;
-                this->range_end = other.range_end;
-                this->range_value = other.range_value;
-                this->max = other.max;
-                this->parent = other.parent;
-                this->color = other.color;
-                this->left_child = other.left_child;
-                this->right_child = other.right_child;
-                return *this;
-            }
-
-            Node& operator=(Node&& other) noexcept requires MoveAssignable<V>
-            {
-                this->range_start = other.range_start;
-                this->range_end = other.range_end;
-                this->range_value = std::move(other.range_value);
-                this->max = other.max;
-                this->parent = other.parent;
-                this->color = other.color;
-                this->left_child = other.left_child;
-                this->right_child = other.right_child;
-                return *this;
-            }
-
-            Node& operator=(Node&& other) noexcept requires OnlyCopyAssignable<V>
-            {
-                this->range_start = other.range_start;
-                this->range_end = other.range_end;
-                this->range_value = other.range_value;
-                this->max = other.max;
-                this->parent = other.parent;
-                this->color = other.color;
-                this->left_child = other.left_child;
-                this->right_child = other.right_child;
-                return *this;
-            }
+            // Delete move and copy constructors and assignment operators
+            Node(const Node<K, V>&) = delete;
+            Node(Node<K, V>&&) = delete;
+            Node<K, V>& operator=(const Node<K, V>&) = delete;
+            Node<K, V>& operator=(Node<K, V>&&) = delete;
 
             bool IsOverlapping(const K& range_start, const K& range_end) const
             {

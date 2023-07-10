@@ -34,8 +34,7 @@ namespace UIT
 
     template <class T>
     concept ValueType = (std::is_move_constructible_v<T> || std::is_copy_constructible_v<T> ||
-                         std::is_default_constructible_v<T> || std::is_fundamental_v<T>) &&
-                        (std::is_move_assignable_v<T> || std::is_copy_assignable_v<T>);
+                         std::is_default_constructible_v<T> || std::is_fundamental_v<T>);
 }
 
 #endif // _UNIQUEINTERVALTREE_CONCEPTS_HPP_
