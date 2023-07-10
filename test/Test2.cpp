@@ -17,8 +17,8 @@ void assert(uint64_t expr, uint64_t val)
 int main(int argc, char** argv)
 {
     std::cout << "test started\n";
-    UIT::Tree<uint64_t, uint64_t> map;
-    uint64_t value = 1;
+    UIT::Tree<uint64_t, std::vector<uint64_t>> map;
+    std::vector<uint64_t> value = {10, 15, 20};
 
     map.Insert(139849762774952L, 139849762776160L, value);
     map.Insert(139849756774200L, 139849756774688L, value);

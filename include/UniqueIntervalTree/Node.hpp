@@ -31,6 +31,7 @@ namespace UIT
             Node* left_child;
             Node* right_child;
 
+            // Fundamentals
             Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
                  requires std::is_fundamental_v<V> : range_start(range_start), range_end(range_end),
@@ -39,34 +40,70 @@ namespace UIT
             {
             }
 
+            // Moveables
             Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires Buildable<V> && (!std::is_fundamental_v<V>) : range_start(range_start), range_end(range_end),
-                 max(max), parent(parent), color(color), left_child(left_child), right_child(right_child)
+                 requires MoveConstructible<V> && (!std::is_fundamental_v<V>) : range_start(range_start),
+                 range_end(range_end), range_value(std::move(range_value)), max(max), parent(parent), color(color),
+                 left_child(left_child), right_child(right_child)
             {
-                if (std::is_move_constructible_v<V>)
-                {
-                    this->range_value(std::move(range_value));
-                }
-                else if (std::is_copy_constructible_v<V>)
-                {
-                    this->range_value(range_value);
-                }
-                else if (std::is_move_assignable_v<V>)
-                {
-                    this->range_value = std::move(range_value);
-                }
-                else if (std::is_copy_assignable_v<V>)
-                {
-                    this->range_value = range_value;
-                }
             }
 
+            // Copyables
+            Node(const K& range_start, const K& range_end, const V& range_value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
+                 requires OnlyCopyConstructible<V> : range_start(range_start), range_end(range_end),
+                 range_value(range_value), max(max), parent(parent), color(color), left_child(left_child),
+                 right_child(right_child)
+            {
+            }
+
+            // Default constructibles
             Node(const K& range_start, const K& range_end, const K& max, Node<K, V>* parent = nullptr,
                  Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
                  requires std::is_default_constructible_v<V> : range_start(range_start), range_end(range_end), max(max),
                  parent(parent), color(color), left_child(left_child), right_child(right_child)
             {
+            }
+
+            // Move assignment
+            Node& operator=(Node&& other) noexcept requires std::is_fundamental_v<V>
+            {
+                this->range_start = other.range_start;
+                this->range_end = other.range_end;
+                this->range_value = other.range_value;
+                this->max = other.max;
+                this->parent = other.parent;
+                this->color = other.color;
+                this->left_child = other.left_child;
+                this->right_child = other.right_child;
+                return *this;
+            }
+
+            Node& operator=(Node&& other) noexcept requires MoveAssignable<V>
+            {
+                this->range_start = other.range_start;
+                this->range_end = other.range_end;
+                this->range_value = std::move(other.range_value);
+                this->max = other.max;
+                this->parent = other.parent;
+                this->color = other.color;
+                this->left_child = other.left_child;
+                this->right_child = other.right_child;
+                return *this;
+            }
+
+            Node& operator=(Node&& other) noexcept requires OnlyCopyAssignable<V>
+            {
+                this->range_start = other.range_start;
+                this->range_end = other.range_end;
+                this->range_value = other.range_value;
+                this->max = other.max;
+                this->parent = other.parent;
+                this->color = other.color;
+                this->left_child = other.left_child;
+                this->right_child = other.right_child;
+                return *this;
             }
 
             bool IsOverlapping(const K& range_start, const K& range_end) const
