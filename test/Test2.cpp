@@ -2,6 +2,7 @@
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #include <iostream>
+#include <vector>
 
 #include "UniqueIntervalTree/Tree.hpp"
 
