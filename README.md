@@ -45,10 +45,10 @@ std::string str = tree.ToString();
 ```
 
 ## Current State
-The library is in working condition, but is not 100% tested, use at your own risk. Issues and Pull Requests are welcome.
+The library is tested and working. It is currently being used as part of the [DCSim simulator](https://github.com/DCArch/DCSim). If you encounter any bugs, please open an issue, or submit a pull request.
 
 ## Author
 [Mohammad Ewais](https://mohammad.ewais.ca)
 
 ## License
-This library is licensed under the MIT license.
+This library is licensed under the CC-BY-NC-SA 4.0 License - see the [LICENSE](LICENSE) file for details.
