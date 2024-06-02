@@ -5,36 +5,46 @@
 #define _UNIQUEINTERVALTREE_CONCEPTS_HPP_
 
 #include <sstream>
-#include <concepts>
+#include <utility>
 #include <type_traits>
 
 namespace UIT
 {
-    template <class T>
-    concept Printable = requires(std::stringstream& os, T a)
+    template <class T, class EqualTo>
+    struct is_comparable_impl 
     {
-        os << a;
+        template <class U, class V>
+        static auto test(U*) -> decltype(
+                std::declval<U>() == std::declval<V>() &&
+                std::declval<U>() != std::declval<V>() &&
+                std::declval<U>() < std::declval<V>() &&
+                std::declval<U>() > std::declval<V>() &&
+                std::declval<U>() <= std::declval<V>() &&
+                std::declval<U>() >= std::declval<V>());
+
+        template <class, class>
+        static auto test(...) -> std::false_type;
+
+        using type = typename std::is_same<bool, decltype(test<T, EqualTo>(0))>::type;
     };
 
-    // Most things when they support move construction, they support move assignment
-    template <class T>
-    concept MoveConstructible = std::is_move_constructible_v<T>;
+    template <class T, class EqualTo = T>
+    struct is_equality_comparable : is_comparable_impl<T, EqualTo>::type {};
 
     template <class T>
-    concept OnlyCopyConstructible = std::is_copy_constructible_v<T> && !std::is_move_constructible_v<T>;
+    struct is_printable_impl
+    {
+        template <class U>
+        static auto test(U*) -> decltype(std::declval<std::stringstream&>() << std::declval<U>(), std::true_type());
+
+        template <class>
+        static auto test(...) -> std::false_type;
+
+        using type = decltype(test<T>(0));
+    };
 
     template <class T>
-    concept MoveAssignable = std::is_move_assignable_v<T>;
-
-    template <class T>
-    concept OnlyCopyAssignable = std::is_copy_assignable_v<T> && !std::is_move_assignable_v<T>;
-
-    template <class T>
-    concept KeyType = std::equality_comparable<T> && std::totally_ordered<T> && Printable<T>;
-
-    template <class T>
-    concept ValueType = (std::is_move_constructible_v<T> || std::is_copy_constructible_v<T> ||
-                         std::is_default_constructible_v<T> || std::is_fundamental_v<T>);
+    struct is_printable : is_printable_impl<T>::type {};
 }
 
 #endif // _UNIQUEINTERVALTREE_CONCEPTS_HPP_

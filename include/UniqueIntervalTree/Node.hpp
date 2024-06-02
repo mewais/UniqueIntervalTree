@@ -18,9 +18,15 @@ namespace UIT
         BLACK,
     };
 
-    template <KeyType K, ValueType V>
+    template <typename K, typename V>
     class Node
     {
+        static_assert(is_equality_comparable<K>::value, "Key type must be totally ordered");
+        static_assert(is_printable<K>::value, "Key type must be printable");
+        static_assert(std::is_move_constructible<V>::value || std::is_copy_constructible<V>::value ||
+                      std::is_default_constructible<V>::value || std::is_fundamental<V>::value, 
+                      "Value type must be fundamental, or default constructible, or copy or move constructible");
+
         public:
             K range_start;
             K range_end;
@@ -31,38 +37,43 @@ namespace UIT
             Node* left_child;
             Node* right_child;
 
-            // Fundamentals
-            Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_fundamental_v<V> : range_start(range_start), range_end(range_end),
-                 range_value(range_value), max(max), parent(parent), color(color), left_child(left_child),
-                 right_child(right_child)
+            // Constructor for fundamental types
+            template <typename T = V>
+            Node(const K& range_start, const K& range_end, T& range_value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr,
+                 typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0)
+                : range_start(range_start), range_end(range_end), range_value(range_value), max(max), parent(parent), color(color),
+                  left_child(left_child), right_child(right_child)
             {
             }
 
-            // Moveables
-            Node(const K& range_start, const K& range_end, V& range_value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires MoveConstructible<V> && (!std::is_fundamental_v<V>) : range_start(range_start),
-                 range_end(range_end), range_value(std::move(range_value)), max(max), parent(parent), color(color),
-                 left_child(left_child), right_child(right_child)
+            // Constructor for moveable types
+            template <typename T = V>
+            Node(const K& range_start, const K& range_end, T& range_value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr,
+                 typename std::enable_if<std::is_move_constructible<T>::value && !std::is_fundamental<T>::value, int>::type = 0)
+                : range_start(range_start), range_end(range_end), range_value(std::move(range_value)), max(max), parent(parent), color(color),
+                  left_child(left_child), right_child(right_child)
             {
             }
 
-            // Copyables
-            Node(const K& range_start, const K& range_end, const V& range_value, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires OnlyCopyConstructible<V> : range_start(range_start), range_end(range_end),
-                 range_value(range_value), max(max), parent(parent), color(color), left_child(left_child),
-                 right_child(right_child)
+            // Constructor for copyable types (but not moveable)
+            template <typename T = V>
+            Node(const K& range_start, const K& range_end, const T& range_value, const K& max, Node<K, V>* parent = nullptr,
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr,
+                 typename std::enable_if<std::is_copy_constructible<T>::value && !std::is_move_constructible<T>::value, int>::type = 0)
+                : range_start(range_start), range_end(range_end), range_value(range_value), max(max), parent(parent), color(color),
+                  left_child(left_child), right_child(right_child)
             {
             }
 
-            // Default constructibles
+            // Constructor for default constructible types
+            template <typename T = V>
             Node(const K& range_start, const K& range_end, const K& max, Node<K, V>* parent = nullptr,
-                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr)
-                 requires std::is_default_constructible_v<V> : range_start(range_start), range_end(range_end), max(max),
-                 parent(parent), color(color), left_child(left_child), right_child(right_child)
+                 Color color = Color::RED, Node<K, V>* left_child = nullptr, Node<K, V>* right_child = nullptr,
+                 typename std::enable_if<std::is_default_constructible<T>::value, int>::type = 0)
+                : range_start(range_start), range_end(range_end), max(max), parent(parent), color(color),
+                  left_child(left_child), right_child(right_child)
             {
             }
 

@@ -6,7 +6,7 @@
 An interval tree is a special type of tree structure that is used to find any numeric intervals overlapping with another. Interval trees are usually built using any type of binary search tree.
 
 ## Implementation
-This is a C++ implementation for a special type of an interval tree. Specifically, interval trees usually allow overlapping ranges or intervals to exist within the tree, but this implementation does not, hence the name `UniqueIntervalTree`.  
+This is a C++11 implementation for a special type of an interval tree. Specifically, interval trees usually allow overlapping ranges or intervals to exist within the tree, but this implementation does not, hence the name `UniqueIntervalTree`.  
 This is a header only implementation, based on a red black tree. The implementation is templated and can work with any type of key and value provided the following:
 1. The key type adheres to the following restrictions:
    1. Must be comparable (i.e. must support/override the `==` and `!=` operators)

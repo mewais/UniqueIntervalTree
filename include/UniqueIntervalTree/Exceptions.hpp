@@ -14,9 +14,11 @@
 namespace UIT
 {
     template <class K>
-    requires std::equality_comparable<K> && std::totally_ordered<K> && Printable<K>
     class InvalidRangeException : public std::exception
     {
+        static_assert(is_equality_comparable<K>::value, "Key type must be totally ordered");
+        static_assert(is_printable<K>::value, "Key type must be printable");
+
         private:
             K range_start;
             K range_end;
@@ -48,9 +50,10 @@ namespace UIT
     };
 
     template <class K>
-    requires Printable<K>
     class PointNotFound : public std::exception
     {
+        static_assert(is_printable<K>::value, "Key type must be printable");
+
         private:
             K point;
             std::string str;
@@ -71,9 +74,10 @@ namespace UIT
     };
 
     template <class K>
-    requires Printable<K>
     class RangeNotFound : public std::exception
     {
+        static_assert(is_printable<K>::value, "Key type must be printable");
+
         private:
             K range_start;
             K range_end;
@@ -96,9 +100,10 @@ namespace UIT
     };
 
     template <class K>
-    requires Printable<K>
     class RangeExists : public std::exception
     {
+        static_assert(is_printable<K>::value, "Key type must be printable");
+
         private:
             K range_start;
             K range_end;

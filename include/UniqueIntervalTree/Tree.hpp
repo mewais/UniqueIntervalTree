@@ -15,9 +15,14 @@
 
 namespace UIT
 {
-    template <KeyType K, ValueType V, class Allocator = std::allocator<Node<K, V>>>
+    template <typename K, typename V, class Allocator = std::allocator<Node<K, V>>>
     class Tree
     {
+        static_assert(is_equality_comparable<K>::value, "Key type must be totally ordered");
+        static_assert(is_printable<K>::value, "Key type must be printable");
+        static_assert(std::is_move_constructible<V>::value || std::is_copy_constructible<V>::value ||
+                      std::is_default_constructible<V>::value || std::is_fundamental<V>::value, 
+                      "Value type must be fundamental, or default constructible, or copy or move constructible");
         public:
             Allocator node_allocator;
             Node<K, V>* root;
@@ -109,7 +114,7 @@ namespace UIT
             {
                 if (uit_unlikely(range_end < range_start) || uit_unlikely(range_end == range_start))
                 {
-                    throw InvalidRangeException(range_start, range_end);
+                    throw InvalidRangeException<K>(range_start, range_end);
                 }
             }
 
@@ -244,7 +249,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound(point);
+                    throw PointNotFound<K>(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -261,7 +266,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
@@ -278,7 +283,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound(point);
+                    throw PointNotFound<K>(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -298,7 +303,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
@@ -317,7 +322,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound(point);
+                    throw PointNotFound<K>(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -334,7 +339,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
@@ -351,7 +356,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw PointNotFound(point);
+                    throw PointNotFound<K>(point);
                 }
                 if (point >= node->range_start && point < node->range_end)
                 {
@@ -371,7 +376,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsOverlapping(range_start, range_end))
                 {
@@ -564,7 +569,7 @@ namespace UIT
 
                 if (uit_unlikely(node->IsOverlapping(range_start, range_end)))
                 {
-                    throw RangeExists(range_start, range_end, node->range_start, node->range_end);
+                    throw RangeExists<K>(range_start, range_end, node->range_start, node->range_end);
                 }
                 if (range_start < node->range_start)
                 {
@@ -698,7 +703,7 @@ namespace UIT
 
                 if (uit_unlikely(node->IsOverlapping(range_start, range_end)))
                 {
-                    throw RangeExists(range_start, range_end, node->range_start, node->range_end);
+                    throw RangeExists<K>(range_start, range_end, node->range_start, node->range_end);
                 }
                 if (range_start < node->range_start)
                 {
@@ -834,8 +839,8 @@ namespace UIT
 
                 if (uit_unlikely(node->IsOverlapping(insert_node->range_start, insert_node->range_end)))
                 {
-                    throw RangeExists(insert_node->range_start, insert_node->range_end, node->range_start,
-                                      node->range_end);
+                    throw RangeExists<K>(insert_node->range_start, insert_node->range_end, node->range_start,
+                                         node->range_end);
                 }
                 if (insert_node->range_start < node->range_start)
                 {
@@ -949,7 +954,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsSame(range_start, range_end))
                 {
@@ -1170,7 +1175,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsSame(range_start, range_end))
                 {
@@ -1299,7 +1304,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsSame(range_start, range_end))
                 {
@@ -1319,7 +1324,7 @@ namespace UIT
             {
                 if (uit_unlikely(node == nullptr))
                 {
-                    throw RangeNotFound(range_start, range_end);
+                    throw RangeNotFound<K>(range_start, range_end);
                 }
                 if (node->IsSame(range_start, range_end))
                 {
@@ -1532,7 +1537,7 @@ namespace UIT
                 Tree<K, V, Allocator>::OrderCheck(range_end, new_range_end);
                 if (uit_unlikely(this->Overlapping(range_end, new_range_end, this->root)))
                 {
-                    throw RangeExists(range_start, range_end);
+                    throw RangeExists<K>(range_start, range_end);
                 }
                 this->GrowEnd(range_start, range_end, new_range_end, this->root);
                 this->RootCheck("Grow End");
